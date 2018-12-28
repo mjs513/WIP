@@ -102,6 +102,17 @@ typedef enum _clock_name
     kCLOCK_VideoPllClk = 0x16U, /*!< Video PLLCLK. */
 } clock_name_t;
 
+/*! @brief PLL PFD name */
+typedef enum _clock_pfd
+{
+    kCLOCK_Pfd0 = 0U, /*!< PLL PFD0 */
+    kCLOCK_Pfd1 = 1U, /*!< PLL PFD1 */
+    kCLOCK_Pfd2 = 2U, /*!< PLL PFD2 */
+    kCLOCK_Pfd3 = 3U, /*!< PLL PFD3 */
+} clock_pfd_t;
+
+
+
 
 /*******************************************************************************
  * Prototypes
