@@ -18,8 +18,10 @@ int led = 13;
 void setup() {
   while ( !Serial && millis() < 4000 ) ;
 
-  Serial4.println(CLOCK_GetAhbFreq());
-  Serial4.println(CLOCK_GetIpgFreq());
+  delay(2000);
+
+  Serial.println(CLOCK_GetAhbFreq());
+  //Serial.println(CLOCK_GetFreq(kCLOCK_AhbClk));
 
   // initialize the digital pin as an output.
   pinMode(led, OUTPUT);

@@ -14,7 +14,18 @@ volatile uint32_t g_xtalFreq;
 static uint32_t CLOCK_GetPeriphClkFreq(void)
 {
     uint32_t freq;
-
+    Serial.print("IF: ");
+    Serial.println(CCM_CBCDR & CCM_CBCDR_PERIPH_CLK_SEL_MASK, HEX);
+    Serial.print("else: ");
+    Serial.println(CCM_CBCDR & CCM_CBCMR_PRE_PERIPH_CLK_SEL_MASK, HEX);
+    Serial.print("CCM_CBCMR_PRE_PERIPH_CLK_SEL(0U): ");
+    Serial.println(CCM_CBCMR_PRE_PERIPH_CLK_SEL(0U), HEX);
+    Serial.print("CCM_CBCMR_PRE_PERIPH_CLK_SEL(1U): ");
+    Serial.println(CCM_CBCMR_PRE_PERIPH_CLK_SEL(1U), HEX);
+    Serial.print("CCM_CBCMR_PRE_PERIPH_CLK_SEL(2U): ");
+    Serial.println(CCM_CBCMR_PRE_PERIPH_CLK_SEL(2U), HEX);
+    Serial.print("CCM_CBCMR_PRE_PERIPH_CLK_SEL(3U): ");
+    Serial.println(CCM_CBCMR_PRE_PERIPH_CLK_SEL(3U), HEX);
     /* Periph_clk2_clk ---> Periph_clk */
     if (CCM_CBCDR & CCM_CBCDR_PERIPH_CLK_SEL_MASK)
     {
@@ -49,21 +60,25 @@ static uint32_t CLOCK_GetPeriphClkFreq(void)
         {
             /* PLL2 ---> Pre_Periph_clk ---> Periph_clk */
             case CCM_CBCMR_PRE_PERIPH_CLK_SEL(0U):
-                freq = CLOCK_GetPllFreq(kCLOCK_PllSys);
+                Serial.println("CASE0");
                 break;
 
             /* PLL2 PFD2 ---> Pre_Periph_clk ---> Periph_clk */
             case CCM_CBCMR_PRE_PERIPH_CLK_SEL(1U):
+                Serial.println("CASE1");
                 freq = CLOCK_GetSysPfdFreq(kCLOCK_Pfd2);
                 break;
 
             /* PLL2 PFD0 ---> Pre_Periph_clk ---> Periph_clk */
             case CCM_CBCMR_PRE_PERIPH_CLK_SEL(2U):
+                Serial.println("CASE2");
                 freq = CLOCK_GetSysPfdFreq(kCLOCK_Pfd0);
                 break;
 
             /* PLL1 divided(/2) ---> Pre_Periph_clk ---> Periph_clk */
             case CCM_CBCMR_PRE_PERIPH_CLK_SEL(3U):
+                Serial.println("CASE3");
+                Serial.printf("kCLOCK_PllSys: %d\r\n", kCLOCK_PllArm);
                 freq = CLOCK_GetPllFreq(kCLOCK_PllArm) /
                        (((CCM_CACRR & CCM_CACRR_ARM_PODF_MASK) >> CCM_CACRR_ARM_PODF_SHIFT) + 1U);
                 break;
@@ -84,6 +99,7 @@ static uint32_t CLOCK_GetPeriphClkFreq(void)
  */
 uint32_t CLOCK_GetAhbFreq(void)
 {
+    Serial.printf("Denom for AHB Clock: %d\r\n", (((CCM_CBCDR & CCM_CBCDR_AHB_PODF_MASK) >> CCM_CBCDR_AHB_PODF_SHIFT) + 1U));
     return CLOCK_GetPeriphClkFreq() / (((CCM_CBCDR & CCM_CBCDR_AHB_PODF_MASK) >> CCM_CBCDR_AHB_PODF_SHIFT) + 1U);
 }
 
@@ -274,18 +290,20 @@ uint32_t CLOCK_GetPllFreq(clock_pll_t pll)
     /* check if PLL is enabled */
     if (!CLOCK_IsPllEnabled(CCM_ANALOG, pll))
     {
+        Serial.printf("Clock not enabled!\r\n");
         return 0U;
     }
 
     /* get pll reference clock */
     freq = CLOCK_GetPllBypassRefClk(CCM_ANALOG, pll);
+    Serial.printf("pll reference clock: %d\r\n", freq);
 
     /* check if pll is bypassed */
     if (CLOCK_IsPllBypassed(CCM_ANALOG, pll))
     {
         return freq;
     }
-
+    Serial.printf("Switching to get clock %d \r\n", pll);
     switch (pll)
     {
         case kCLOCK_PllArm:
@@ -438,6 +456,7 @@ uint32_t CLOCK_GetPllFreq(clock_pll_t pll)
             freq = (freq * ((CCM_ANALOG_PLL_USB2 & CCM_ANALOG_PLL_USB2_DIV_SELECT_MASK) ? 22U : 20U));
             break;
         default:
+            Serial.println("DEFAULT HIT ON GETTING FREQ");
             freq = 0U;
             break;
     }
