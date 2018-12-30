@@ -15,9 +15,15 @@
 int led = 13;
 
 // the setup routine runs once when you press reset:
-void setup() {                
+void setup() {
+  while ( !Serial && millis() < 4000 ) ;
+
+  Serial4.println(CLOCK_GetAhbFreq());
+  Serial4.println(CLOCK_GetIpgFreq());
+
   // initialize the digital pin as an output.
-  pinMode(led, OUTPUT);     
+  pinMode(led, OUTPUT);
+      
 }
 
 // the loop routine runs over and over again forever:
