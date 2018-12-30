@@ -223,6 +223,7 @@ enum _clock_pll_clk_src
 #define CCM_ANALOG_BASE                          (0x400D8000u)
 /** Peripheral CCM_ANALOG base pointer */
 #define CCM_ANALOG                               ((CCM_ANALOG_Type *)CCM_ANALOG_BASE)
+
 #define CCM_ANALOG_TUPLE_REG_OFF(base, tuple, off) (*((volatile uint32_t *)((uint32_t)base + (((uint32_t)tuple >> 16U) & 0xFFFU) + off)))
 #define CCM_ANALOG_TUPLE_REG(base, tuple) CCM_ANALOG_TUPLE_REG_OFF(base, tuple, 0U)
 #define CCM_ANALOG_TUPLE_SHIFT(tuple) (((uint32_t)tuple) & 0x1FU)
@@ -260,7 +261,9 @@ typedef enum _clock_pfd
  */
 static inline uint32_t CLOCK_GetOscFreq(void)
 {
-    return (XTALOSC24M_LOWPWR_CTRL & 0x10U) ? 24000000UL : g_xtalFreq;
+    //return (XTALOSC24M_LOWPWR_CTRL & 0x10U) ? 24000000UL : g_xtalFreq;
+    //Kludge
+    return (XTALOSC24M_LOWPWR_CTRL & 0x10U) ? 24000000UL : 24000000UL;
 }
 
 /*******************************************************************************
@@ -284,12 +287,12 @@ static inline uint32_t CLOCK_GetRtcFreq(void)
 
 static inline bool CLOCK_IsPllEnabled(CCM_ANALOG_Type *base, clock_pll_t pll)
 {
-    return (bool)(CCM_ANALOG_TUPLE_REG(CCM_ANALOG, pll) & (1U << CCM_ANALOG_TUPLE_SHIFT(pll)));
+    return (bool)(CCM_ANALOG_TUPLE_REG(base, pll) & (1U << CCM_ANALOG_TUPLE_SHIFT(pll)));
 }
 
 static inline uint32_t CLOCK_GetPllBypassRefClk(CCM_ANALOG_Type *base, clock_pll_t pll)
 {
-    return (((CCM_ANALOG_TUPLE_REG(CCM_ANALOG, pll) & CCM_ANALOG_PLL_BYPASS_CLK_SRC_MASK) >>
+    return (((CCM_ANALOG_TUPLE_REG(base, pll) & CCM_ANALOG_PLL_BYPASS_CLK_SRC_MASK) >>
              CCM_ANALOG_PLL_BYPASS_CLK_SRC_SHIFT) == kCLOCK_PllClkSrc24M) ?
                CLOCK_GetOscFreq() :
                CLKPN_FREQ;
@@ -297,5 +300,5 @@ static inline uint32_t CLOCK_GetPllBypassRefClk(CCM_ANALOG_Type *base, clock_pll
 
 static inline bool CLOCK_IsPllBypassed(CCM_ANALOG_Type *base, clock_pll_t pll)
 {
-    return (bool)(CCM_ANALOG_TUPLE_REG(CCM_ANALOG, pll) & (1U << CCM_ANALOG_PLL_BYPASS_SHIFT));
+    return (bool)(CCM_ANALOG_TUPLE_REG(base, pll) & (1U << CCM_ANALOG_PLL_BYPASS_SHIFT));
 }

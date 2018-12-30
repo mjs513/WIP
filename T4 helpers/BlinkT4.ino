@@ -20,9 +20,11 @@ void setup() {
 
   delay(2000);
 
-  Serial.println(CLOCK_GetAhbFreq());
-  //Serial.println(CLOCK_GetFreq(kCLOCK_AhbClk));
-
+  Serial.printf("System Clock: %d\r\n", CLOCK_GetAhbFreq());
+  Serial.printf("IPG Clock: %d\r\n", CLOCK_GetFreq(kCLOCK_IpgClk));
+  Serial.printf("RTC Clock: %d\r\n", CLOCK_GetFreq(kCLOCK_RtcClk));
+  Serial.printf("USB1pll Clock: %d\r\n", CLOCK_GetFreq(kCLOCK_Usb1PllClk));
+  
   // initialize the digital pin as an output.
   pinMode(led, OUTPUT);
       
