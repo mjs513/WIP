@@ -13,7 +13,7 @@ uint32_t panicAlarmTemp; /*!< The panic alarm temperature.*/
 uint32_t lowAlarmTemp;   /*!< The low alarm */
 
 float temperature = 0.0f;
-volatile bool temperatureReach = false;
+volatile bool TempAlarm = false;
 
 
 void setup() {
@@ -44,6 +44,7 @@ void setup() {
 }
 
 void loop() {
+  while(!Serial);
   delay(1000);
   temperature = tGetTemp();
   Serial.printf("temperature is %.1f \r\n", temperature);
@@ -60,18 +61,36 @@ void loop() {
   Serial.println((CCM_ANALOG_MISC1 >> 27U) & 1U);
   Serial.println();
   */
+
+  if (TempAlarm && ((temperature - panicAlarmTemp > 0)))
+  {
+      TempAlarm = false;
+
+      Serial.printf("PANIC Temperature Alarm %.1f. DANGER WILL ROBINSON!!!!\r\n", temperature);
+  }
+
+  if (TempAlarm && ((temperature - highAlarmTemp > 0)) && (temperature - panicAlarmTemp < 0) )
+  {
+      TempAlarm = false;
+
+      Serial.printf("HIGH Temperature Alarm %.1f. \r\n", temperature);
+  }
+
+  if (TempAlarm && (temperature - lowAlarmTemp < 0))
+  {
+      TempAlarm = false;
+
+      Serial.printf("LOW Temperature Alarm %.1f. \r\n", temperature);
+  }
+  
 }
 
 void High_Low_Temp_isr(void)
 {
-    //temperatureReach = true;
-    temperature = tGetTemp();
-    Serial.printf("High/Low temp alarm tripped %.1f\r\n", temperature); 
+    TempAlarm = true;
 }
 
 void Panic_Temp_isr(void)
 {
-    //temperatureReach = true;
-    temperature = tGetTemp();
-    Serial.printf("Panic temp alarm tripped %.1f\r\n", temperature); 
+    TempAlarm = true;
 }
