@@ -261,9 +261,9 @@ typedef enum _clock_pfd
  */
 static inline uint32_t CLOCK_GetOscFreq(void)
 {
-    //return (XTALOSC24M_LOWPWR_CTRL & 0x10U) ? 24000000UL : g_xtalFreq;
+    return (XTALOSC24M_LOWPWR_CTRL & 0x10U) ? 24000000UL : g_xtalFreq;
     //Kludge
-    return (XTALOSC24M_LOWPWR_CTRL & 0x10U) ? 24000000UL : 24000000UL;
+    //return (XTALOSC24M_LOWPWR_CTRL & 0x10U) ? 24000000UL : 24000000UL;
 }
 
 /*******************************************************************************
@@ -301,4 +301,9 @@ static inline uint32_t CLOCK_GetPllBypassRefClk(CCM_ANALOG_Type *base, clock_pll
 static inline bool CLOCK_IsPllBypassed(CCM_ANALOG_Type *base, clock_pll_t pll)
 {
     return (bool)(CCM_ANALOG_TUPLE_REG(base, pll) & (1U << CCM_ANALOG_PLL_BYPASS_SHIFT));
+}
+
+static inline void CLOCK_SetXtalFreq(uint32_t freq)
+{
+    g_xtalFreq = freq;
 }
