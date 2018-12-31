@@ -17,33 +17,26 @@ void initTempMon(uint16_t freq, uint32_t highAlarmTemp, uint32_t panicAlarmTemp,
     
   //first power on the temperature sensor - no register change
   TEMPMON_TEMPSENSE0 &= ~TMS0_POWER_DOWN_MASK;
-  Serial4.print("TEMPMON_TEMPSENSE0 (Pwr Up): ");
-  Serial4.println(TEMPMON_TEMPSENSE0, BIN);
+
   //Serial4.printf("CCM_ANALOG_PLL_USB1=%08lX\n", n);
 
   //set monitoring frequency - no register change
   TEMPMON_TEMPSENSE1 = TMS1_MEASURE_FREQ(freq);
-  Serial4.print("Set Freq (TEMPMON_TEMPSENSE1):  ");
-  Serial4.print(TMS1_MEASURE_FREQ(freq), HEX); Serial4.println(", ");
-  Serial4.println(TEMPMON_TEMPSENSE1, BIN);
   
   //read calibration data - this works
   calibrationData = HW_OCOTP_ANA1;
     s_hotTemp = (uint32_t)(calibrationData & 0xFFU) >> 0x00U;
     s_hotCount = (uint32_t)(calibrationData & 0xFFF00U) >> 0X08U;
     roomCount = (uint32_t)(calibrationData & 0xFFF00000U) >> 0x14U;
-  Serial4.printf("CAL DATA (HT,HTC,RC):  %d, %d, %d\r\n", s_hotTemp, s_hotCount, roomCount);
     s_hotT_ROOM = s_hotTemp - TEMPMON_ROOMTEMP;
     s_roomC_hotC = roomCount - s_hotCount;
-  Serial4.printf("s_hotRoom, s_roomc_hotC:  %.1f, %d\r\n", s_hotT_ROOM, s_roomC_hotC);
 
     //time to set alarm temperatures
     tSetTempAlarm(highAlarmTemp, kTEMPMON_HighAlarmMode);
-  Serial4.println(TEMPMON_TEMPSENSE1, BIN);
     tSetTempAlarm(panicAlarmTemp, kTEMPMON_PanicAlarmMode);
-  Serial4.println(TEMPMON_TEMPSENSE2, BIN);
     tSetTempAlarm(lowAlarmTemp, kTEMPMON_LowAlarmMode);
-  Serial4.println(TEMPMON_TEMPSENSE2, BIN);
+
+
 }
 
 void tSetTempAlarm(uint32_t tempVal, tempmon_alarm_mode alarmMode)
