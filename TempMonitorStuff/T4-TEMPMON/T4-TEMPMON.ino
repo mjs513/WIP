@@ -41,7 +41,7 @@ void setup() {
 }
 
 void loop() {
-  delay(100);
+  delay(1000);
   temperature = tGetTemp();
   Serial4.printf("temperature is %.1f \r\n", temperature);
 

@@ -15,19 +15,19 @@ void initTempMon(uint16_t freq, uint32_t highAlarmTemp, uint32_t panicAlarmTemp,
   uint32_t calibrationData;
   uint32_t roomCount;
     
-  //first power on the temperature sensor
+  //first power on the temperature sensor - no register change
   TEMPMON_TEMPSENSE0 &= ~TMS0_POWER_DOWN_MASK;
   Serial4.print("TEMPMON_TEMPSENSE0 (Pwr Up): ");
   Serial4.println(TEMPMON_TEMPSENSE0, BIN);
   //Serial4.printf("CCM_ANALOG_PLL_USB1=%08lX\n", n);
 
-  //set monitoring frequency
+  //set monitoring frequency - no register change
   TEMPMON_TEMPSENSE1 = TMS1_MEASURE_FREQ(freq);
   Serial4.print("Set Freq (TEMPMON_TEMPSENSE1):  ");
   Serial4.print(TMS1_MEASURE_FREQ(freq), HEX); Serial4.println(", ");
   Serial4.println(TEMPMON_TEMPSENSE1, BIN);
   
-  //read calibration data
+  //read calibration data - this works
   calibrationData = HW_OCOTP_ANA1;
     s_hotTemp = (uint32_t)(calibrationData & 0xFFU) >> 0x00U;
     s_hotCount = (uint32_t)(calibrationData & 0xFFF00U) >> 0X08U;
