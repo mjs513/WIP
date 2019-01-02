@@ -9,7 +9,7 @@ static uint32_t roomCount;   /*!< The value of TEMPMON_TEMPSENSE0[TEMP_VALUE] at
 static float s_hotT_ROOM;     /*!< The value of s_hotTemp minus room temperature(25¡æ).*/
 static uint32_t s_roomC_hotC; /*!< The value of s_roomCount minus s_hotCount.*/
 
-void initTempMon(uint16_t freq, uint32_t highAlarmTemp, uint32_t panicAlarmTemp, uint32_t lowAlarmTemp)
+void initTempMon(uint16_t freq, uint32_t highAlarmTemp, uint32_t lowAlarmTemp, uint32_t panicAlarmTemp)
 {
   
   uint32_t calibrationData;
@@ -31,15 +31,13 @@ void initTempMon(uint16_t freq, uint32_t highAlarmTemp, uint32_t panicAlarmTemp,
     s_hotT_ROOM = s_hotTemp - TEMPMON_ROOMTEMP;
     s_roomC_hotC = roomCount - s_hotCount;
 
-    //Serial.printf("Calibration Data: \r\n");
-    //Serial.printf("s_hotTemp = %d, s_hotCount = %d, roomCount = %d\r\n",s_hotTemp,s_hotCount,roomCount);
-    //Serial.printf("s_hotT_ROOM = %.2f, s_roomC_hotC = %d\r\n", s_hotT_ROOM,s_roomC_hotC);
-
     //time to set alarm temperatures
     tSetTempAlarm(highAlarmTemp, kTEMPMON_HighAlarmMode);
     tSetTempAlarm(panicAlarmTemp, kTEMPMON_PanicAlarmMode);
     tSetTempAlarm(lowAlarmTemp, kTEMPMON_LowAlarmMode);
 }
+
+
 
 void tSetTempAlarm(uint32_t tempVal, tempmon_alarm_mode alarmMode)
 {
@@ -47,27 +45,26 @@ void tSetTempAlarm(uint32_t tempVal, tempmon_alarm_mode alarmMode)
 
     /* Calculate alarm temperature code value */
     tempCodeVal = (uint32_t)(s_hotCount + (s_hotTemp - tempVal) * s_roomC_hotC / s_hotT_ROOM);
+    
     switch (alarmMode)
     {
         case kTEMPMON_HighAlarmMode:
             /* Set high alarm temperature code value */
             TEMPMON_TEMPSENSE0 |= TMS0_ALARM_VALUE(tempCodeVal);
-            Serial.printf("tempCodeVal = %d\r\n", tempCodeVal);
             break;
 
         case kTEMPMON_PanicAlarmMode:
             /* Set panic alarm temperature code value */
             TEMPMON_TEMPSENSE2 |= TMS02_PANIC_ALARM_VALUE(tempCodeVal);
-            Serial.printf("tempCodeVal = %d\r\n", tempCodeVal);
             break;
 
         case kTEMPMON_LowAlarmMode:
             /* Set low alarm temperature code value */
             TEMPMON_TEMPSENSE2 |= TMS02_LOW_ALARM_VALUE(tempCodeVal);
-            Serial.printf("tempCodeVal = %d\r\n", tempCodeVal);
             break;
 
         default:
+            Serial.printf("Not Set %d", alarmMode);
             break;
     }
 }

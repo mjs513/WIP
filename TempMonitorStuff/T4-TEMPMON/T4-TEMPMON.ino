@@ -30,10 +30,11 @@ void setup() {
                             //0xFFFF determines a 2 second sample rate period
     highAlarmTemp   = 75U;  //42 degrees C
     lowAlarmTemp    = 25U;
-    panicAlarmTemp  = 85U;
+    panicAlarmTemp  = 90U;
 
     initTempMon(frequency, highAlarmTemp, lowAlarmTemp, panicAlarmTemp);
     tStartMeasure();        //Start measurements
+
 
     /* Get temperature */
     temperature = tGetTemp();
@@ -47,28 +48,14 @@ void loop() {
   while(!Serial);
   delay(1000);
   temperature = tGetTemp();
-  Serial.printf("temperature is %.1f \r\n", temperature);
-  //Serial.print("CCM_ANALOG_MISC1 bit low: ");
-  //Serial.println(CCM_ANALOG_MISC1,BIN);
-  /*  Checking if alarm was tripped  
-  Serial.print("CCM_ANALOG_MISC1 bit low: ");
-  Serial.println((CCM_ANALOG_MISC1 >> 28U) & 1U);
+  Serial.printf("temperature is %.1f \r\n\r\n", temperature);
 
-  Serial.print("CCM_ANALOG_MISC1 bit high: ");
-  Serial.println((CCM_ANALOG_MISC1 >> 29U) & 1U);
-
-  Serial.print("CCM_ANALOG_MISC1 bit Panic: ");
-  Serial.println((CCM_ANALOG_MISC1 >> 27U) & 1U);
-  Serial.println();
-  */
-
-  if (TempAlarm && ((temperature - panicAlarmTemp > 0)))
-  {
-      TempAlarm = false;
-
-      Serial.printf("PANIC Temperature Alarm %.1f. DANGER WILL ROBINSON!!!!\r\n", temperature);
-  }
-
+  /* Based on testing the only register that is tripped is
+   *  the high temper register in CCM_ANALOG_MISC1
+   *  
+   *  
+   */
+  
   if (TempAlarm && ((temperature - highAlarmTemp > 0)) && (temperature - panicAlarmTemp < 0) )
   {
       TempAlarm = false;
