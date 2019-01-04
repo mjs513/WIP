@@ -9,12 +9,13 @@ static uint32_t roomCount;   /*!< The value of TEMPMON_TEMPSENSE0[TEMP_VALUE] at
 static float s_hotT_ROOM;     /*!< The value of s_hotTemp minus room temperature(25¡æ).*/
 static uint32_t s_roomC_hotC; /*!< The value of s_roomCount minus s_hotCount.*/
 
-void initTempMon(uint16_t freq, uint32_t highAlarmTemp, uint32_t lowAlarmTemp, uint32_t panicAlarmTemp)
+void initTempMon(uint16_t freq, uint32_t lowAlarmTemp, uint32_t highAlarmTemp, uint32_t panicAlarmTemp)
 {
   
   uint32_t calibrationData;
   uint32_t roomCount;
-    
+  uint32_t mode1;
+      
   //first power on the temperature sensor - no register change
   TEMPMON_TEMPSENSE0 &= ~TMS0_POWER_DOWN_MASK;
 
@@ -41,11 +42,10 @@ void initTempMon(uint16_t freq, uint32_t highAlarmTemp, uint32_t lowAlarmTemp, u
 
 void tSetTempAlarm(uint32_t tempVal, tempmon_alarm_mode alarmMode)
 {
-    uint32_t tempCodeVal;
-
+    uint32_t tempCodeVal, tmp32 = 0;
+    
     /* Calculate alarm temperature code value */
     tempCodeVal = (uint32_t)(s_hotCount + (s_hotTemp - tempVal) * s_roomC_hotC / s_hotT_ROOM);
-    
     switch (alarmMode)
     {
         case kTEMPMON_HighAlarmMode:
@@ -80,7 +80,6 @@ float tGetTemp()
 
     /* ready to read temperature code value */
     nmeas = (TEMPMON_TEMPSENSE0 & 0xFFF00U) >> 8U;
-
     /* Calculate temperature */
     tmeas = s_hotTemp - (float)((nmeas - s_hotCount) * s_hotT_ROOM / s_roomC_hotC);
 
