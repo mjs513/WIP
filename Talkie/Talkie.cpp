@@ -150,9 +150,9 @@ int8_t Talkie::sayQ(const uint8_t * addr) {
 #define ISR(f) void f(void)
 		IntervalTimer *t = new IntervalTimer();
 		t->begin(timerInterrupt, 1000000.0f / (float)FS);
-		#if defined(__IMXRT1052__) || defined(__IMXRT1060__)
+		if(!_hasPShield)
 			analogWriteFrequency(_pwmPIN,62500);
-		#endif
+
 #define ISR_RATIO (25000/ (1000000.0f / (float)FS) )
 #endif
 		isrTalkptr = this;
@@ -208,9 +208,14 @@ static void timerInterrupt() {
 			analogWrite(A14, nextPwm);
 		#elif defined(__MK64FX512__) || defined(__MK66FX1M0__)
 			analogWrite(A21, nextPwm);
+		#elif defined(__IMXRT1052__) || defined(__IMXRT1060__)
+		Serial.println("Board does not support Propshield");
+		exit(0);
 		#else
-		//#error "No Propshield"	// dont like this line
+		#error "Unknown Teensy"	// dont like this line
 		#endif
+		pinMode(5, OUTPUT);
+		digitalWrite(5, HIGH);//Enable Amplified PROP shield
 	} else {
 		#if defined(__IMXRT1052__) || defined(__IMXRT1060__) || defined(__MK64FX512__) || defined(__MK66FX1M0__) \
 			|| defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MKL26Z64__)
