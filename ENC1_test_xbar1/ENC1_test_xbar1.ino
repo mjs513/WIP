@@ -3,6 +3,7 @@
 
 #define PHASEA 1
 #define PHASEB 2
+#define PULLUPS 0  //set to 1 if pullups are needed
 
 #define CORE_XIO_PIN0 IOMUXC_XBAR1_IN17_SELECT_INPUT
 #define CORE_XIO_PIN1 IOMUXC_XBAR1_IN16_SELECT_INPUT
@@ -35,8 +36,8 @@ void setup()
 
   CCM_CCGR2 |= CCM_CCGR2_XBAR1(CCM_CCGR_ON);   //turn clock on for xbara1
 
-  enc_xbara_mapping(6, PHASEA);
-  enc_xbara_mapping(7, PHASEB);
+  enc_xbara_mapping(6, PHASEA, PULLUPS);
+  enc_xbara_mapping(7, PHASEB, PULLUPS);
 
   //==========================================================================
   /* XBARA_SetSignalsConnection(XBARA1, kXBARA1_InputIomuxXbarIn21, kXBARA1_OutputEnc1PhaseAInput);
@@ -85,7 +86,7 @@ void loop(){
 }
 
 
-void enc_xbara_mapping(uint8_t pin, uint8_t PHASE){ 
+void enc_xbara_mapping(uint8_t pin, uint8_t PHASE, uint8_t PUS){ 
 
   const struct digital_pin_bitband_and_config_table_struct *p;
   const struct xio_pin_input_config_table_struct *x;
@@ -108,7 +109,11 @@ void enc_xbara_mapping(uint8_t pin, uint8_t PHASE){
   }
   
   //Pad configuration for encoder/xbara1
-  *(p->pad) = 0x10B0;
+  if(PUS == 0){
+    *(p->pad) = 0x10B0;
+  } else {
+    *(p->pad) = 0x1f038;
+  }
   
   x = xio_pin_to_info_PGM + pin;
   *(x->reg) = xbara1_mux[pin];
