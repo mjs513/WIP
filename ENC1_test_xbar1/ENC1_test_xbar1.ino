@@ -1,6 +1,30 @@
 #include "Enc_Layer.h"
 #include "defines.h"
 
+#define PHASEA 1
+#define PHASEB 2
+
+#define CORE_XIO_PIN0 IOMUXC_XBAR1_IN17_SELECT_INPUT
+#define CORE_XIO_PIN1 IOMUXC_XBAR1_IN16_SELECT_INPUT
+#define CORE_XIO_PIN2 IOMUXC_XBAR1_IN06_SELECT_INPUT
+#define CORE_XIO_PIN3 IOMUXC_XBAR1_IN07_SELECT_INPUT
+#define CORE_XIO_PIN4 IOMUXC_XBAR1_IN08_SELECT_INPUT
+#define CORE_XIO_PIN5 IOMUXC_XBAR1_IN09_SELECT_INPUT
+#define CORE_XIO_PIN7 IOMUXC_XBAR1_IN14_SELECT_INPUT    
+#define CORE_XIO_PIN6 IOMUXC_XBAR1_IN15_SELECT_INPUT
+
+struct xio_pin_input_config_table_struct {
+    volatile uint32_t *reg;
+};
+
+const struct xio_pin_input_config_table_struct xio_pin_to_info_PGM[] = {
+  {&CORE_XIO_PIN0}, {&CORE_XIO_PIN1},
+  {&CORE_XIO_PIN2}, {&CORE_XIO_PIN3},
+  {&CORE_XIO_PIN4}, {&CORE_XIO_PIN5},
+  {&CORE_XIO_PIN6}, {&CORE_XIO_PIN7}
+};
+
+
 enc_config_t mEncConfigStruct;
 uint32_t mCurPosValue;
 
@@ -11,16 +35,8 @@ void setup()
 
   CCM_CCGR2 |= CCM_CCGR2_XBAR1(CCM_CCGR_ON);   //turn clock on for xbara1
 
-  CORE_PIN6_CONFIG = 0x11;  //Select mux mode: ALT3 mux port
-  CORE_PIN7_CONFIG = 0x11;  //0x03=Input Path is determined by functionality, 
-                            //0x13 for 1 enabled
-  
-  CORE_PIN6_PADCONFIG = 0x10B0;  //pin pad configuration
-  CORE_PIN7_PADCONFIG = 0x10B0;
-  
-  //set as input
-  IOMUXC_XBAR1_IN15_SELECT_INPUT = 0x01;  //set both pins as input
-  IOMUXC_XBAR1_IN14_SELECT_INPUT = 0x01;
+  enc_xbara_mapping(6, PHASEA);
+  enc_xbara_mapping(7, PHASEB);
 
   //==========================================================================
   /* XBARA_SetSignalsConnection(XBARA1, kXBARA1_InputIomuxXbarIn21, kXBARA1_OutputEnc1PhaseAInput);
@@ -37,9 +53,10 @@ void setup()
    * kXBARA1_InputIomuxXbarInout07   = 7|0x100U,    // IOMUX_XBAR_INOUT07 output assigned to XBARA1_IN7 input.
    * kXBARA1_InputIomuxXbarInout08   = 8|0x100U,    // IOMUX_XBAR_INOUT08 output assigned to XBARA1_IN8 input.
    */
-  
-  xbar_connect(15, 66);
-  xbar_connect(14, 67);
+
+  Serial.print("IOMUXC_GPR_GPR6: "); Serial.println(IOMUXC_GPR_GPR6, BIN);
+
+  delay(2000);
   //========================================================================
   //Phase A => pin3
   //Phase B => pin2
@@ -49,19 +66,58 @@ void setup()
     ENC_DoSoftwareLoadInitialPositionValue(); /* Update the position counter with initial value. */
 }
 
+uint32_t old_position = 0;
+
 void loop(){
   
   /* This read operation would capture all the position counter to responding hold registers. */
   mCurPosValue = ENC_GetPositionValue();
 
-  /* Read the position values. */
-  Serial.printf("Current position value: %ld\r\n", mCurPosValue);
-  Serial.printf("Position differential value: %d\r\n", (int16_t)ENC_GetHoldPositionDifferenceValue());
-  Serial.printf("Position revolution value: %d\r\n", ENC_GetHoldRevolutionValue());
-  Serial.println();
-  
+  if(mCurPosValue != old_position){
+    /* Read the position values. */
+    Serial.printf("Current position value: %ld\r\n", mCurPosValue);
+    Serial.printf("Position differential value: %d\r\n", (int16_t)ENC_GetHoldPositionDifferenceValue());
+    Serial.printf("Position revolution value: %d\r\n", ENC_GetHoldRevolutionValue());
+    Serial.println();
+  }
+
+  old_position = mCurPosValue;
 }
 
+
+void enc_xbara_mapping(uint8_t pin, uint8_t PHASE){ 
+
+  const struct digital_pin_bitband_and_config_table_struct *p;
+  const struct xio_pin_input_config_table_struct *x;
+  uint32_t pinmode, mask;
+  
+  uint8_t xbara1_mux[] = {1, 0, 0, 0, 0, 0, 1, 1};
+  uint16_t xbara1_IO[] = {17, 16, 6, 7, 8, 9, 15, 14};
+  
+  if (pin >= 8) return;         //first 8 pins are xbara1 io pins
+  p = digital_pin_to_info_PGM + pin;
+  //mux is ctrl config for pin
+  //pad is pad config
+  //pinmode = *(p->reg + 1);
+  
+  //Pin ctrl configuration for encoder/xbara1
+  if(pin == 4 || pin == 5) {
+    *(p->mux) = 0x03;
+  } else {
+    *(p->mux) = 0x01;
+  }
+  
+  //Pad configuration for encoder/xbara1
+  *(p->pad) = 0x10B0;
+  
+  x = xio_pin_to_info_PGM + pin;
+  *(x->reg) = xbara1_mux[pin];
+
+  //XBARA1 Connection to encoder
+  if(PHASE == 1) xbar_connect(xbara1_IO[pin], 66);
+  if(PHASE == 2) xbar_connect(xbara1_IO[pin], 67);
+
+}
 void xbar_connect(unsigned int input, unsigned int output)
 {
   if (input >= 88) return;
