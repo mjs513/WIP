@@ -11,8 +11,8 @@
 #define CORE_XIO_PIN3 IOMUXC_XBAR1_IN07_SELECT_INPUT
 #define CORE_XIO_PIN4 IOMUXC_XBAR1_IN08_SELECT_INPUT
 #define CORE_XIO_PIN5 IOMUXC_XBAR1_IN09_SELECT_INPUT
-#define CORE_XIO_PIN7 IOMUXC_XBAR1_IN14_SELECT_INPUT    
 #define CORE_XIO_PIN6 IOMUXC_XBAR1_IN15_SELECT_INPUT
+#define CORE_XIO_PIN7 IOMUXC_XBAR1_IN14_SELECT_INPUT    
 
 struct xio_pin_input_config_table_struct {
     volatile uint32_t *reg;
@@ -36,8 +36,8 @@ void setup()
 
   CCM_CCGR2 |= CCM_CCGR2_XBAR1(CCM_CCGR_ON);   //turn clock on for xbara1
 
-  enc_xbara_mapping(6, PHASEA, PULLUPS);
-  enc_xbara_mapping(7, PHASEB, PULLUPS);
+  enc_xbara_mapping(2, PHASEA, PULLUPS);
+  enc_xbara_mapping(3, PHASEB, PULLUPS);
 
   //==========================================================================
   /* XBARA_SetSignalsConnection(XBARA1, kXBARA1_InputIomuxXbarIn21, kXBARA1_OutputEnc1PhaseAInput);
@@ -59,8 +59,7 @@ void setup()
 
   delay(2000);
   //========================================================================
-  //Phase A => pin3
-  //Phase B => pin2
+
     /* Initialize the ENC module. */
     ENC_GetDefaultConfig(&mEncConfigStruct);
     ENC_Init(&mEncConfigStruct);
@@ -102,7 +101,7 @@ void enc_xbara_mapping(uint8_t pin, uint8_t PHASE, uint8_t PUS){
   //pinmode = *(p->reg + 1);
   
   //Pin ctrl configuration for encoder/xbara1
-  if(pin == 4 || pin == 5) {
+  if(pin == 2 || pin == 3 || pin == 4 || pin == 5) {
     *(p->mux) = 0x03;
   } else {
     *(p->mux) = 0x01;
