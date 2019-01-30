@@ -1,7 +1,4 @@
 
-#define kXBARA1_InputPitTrigger0         56         /**< PIT_TRIGGER0 output assigned to XBARA1_IN56 input. */
-#define kXBARA1_OutputAdcEtcXbar0Trig0  103  /**< XBARA1_OUT103 output assigned to ADC_ETC_XBAR0_TRIG0 */
-
 /* ----------------------------------------------------------------------------
    -- ADC_ETC Peripheral Access Layer
    ---------------------------------------------------------------------------- */
@@ -388,6 +385,57 @@ typedef struct {
 /* The count of ADC_ETC_TRIGn_RESULT_7_6 */
 #define ADC_ETC_TRIGn_RESULT_7_6_COUNT           (8U)
 
+/*! @name DMA_CTRL - ETC DMA control Register */
+/*! @{ */
+#define ADC_ETC_DMA_CTRL_TRIG0_ENABLE_MASK       (0x1U)
+#define ADC_ETC_DMA_CTRL_TRIG0_ENABLE_SHIFT      (0U)
+#define ADC_ETC_DMA_CTRL_TRIG0_ENABLE(x)         (((uint32_t)(((uint32_t)(x)) << ADC_ETC_DMA_CTRL_TRIG0_ENABLE_SHIFT)) & ADC_ETC_DMA_CTRL_TRIG0_ENABLE_MASK)
+#define ADC_ETC_DMA_CTRL_TRIG1_ENABLE_MASK       (0x2U)
+#define ADC_ETC_DMA_CTRL_TRIG1_ENABLE_SHIFT      (1U)
+#define ADC_ETC_DMA_CTRL_TRIG1_ENABLE(x)         (((uint32_t)(((uint32_t)(x)) << ADC_ETC_DMA_CTRL_TRIG1_ENABLE_SHIFT)) & ADC_ETC_DMA_CTRL_TRIG1_ENABLE_MASK)
+#define ADC_ETC_DMA_CTRL_TRIG2_ENABLE_MASK       (0x4U)
+#define ADC_ETC_DMA_CTRL_TRIG2_ENABLE_SHIFT      (2U)
+#define ADC_ETC_DMA_CTRL_TRIG2_ENABLE(x)         (((uint32_t)(((uint32_t)(x)) << ADC_ETC_DMA_CTRL_TRIG2_ENABLE_SHIFT)) & ADC_ETC_DMA_CTRL_TRIG2_ENABLE_MASK)
+#define ADC_ETC_DMA_CTRL_TRIG3_ENABLE_MASK       (0x8U)
+#define ADC_ETC_DMA_CTRL_TRIG3_ENABLE_SHIFT      (3U)
+#define ADC_ETC_DMA_CTRL_TRIG3_ENABLE(x)         (((uint32_t)(((uint32_t)(x)) << ADC_ETC_DMA_CTRL_TRIG3_ENABLE_SHIFT)) & ADC_ETC_DMA_CTRL_TRIG3_ENABLE_MASK)
+#define ADC_ETC_DMA_CTRL_TRIG4_ENABLE_MASK       (0x10U)
+#define ADC_ETC_DMA_CTRL_TRIG4_ENABLE_SHIFT      (4U)
+#define ADC_ETC_DMA_CTRL_TRIG4_ENABLE(x)         (((uint32_t)(((uint32_t)(x)) << ADC_ETC_DMA_CTRL_TRIG4_ENABLE_SHIFT)) & ADC_ETC_DMA_CTRL_TRIG4_ENABLE_MASK)
+#define ADC_ETC_DMA_CTRL_TRIG5_ENABLE_MASK       (0x20U)
+#define ADC_ETC_DMA_CTRL_TRIG5_ENABLE_SHIFT      (5U)
+#define ADC_ETC_DMA_CTRL_TRIG5_ENABLE(x)         (((uint32_t)(((uint32_t)(x)) << ADC_ETC_DMA_CTRL_TRIG5_ENABLE_SHIFT)) & ADC_ETC_DMA_CTRL_TRIG5_ENABLE_MASK)
+#define ADC_ETC_DMA_CTRL_TRIG6_ENABLE_MASK       (0x40U)
+#define ADC_ETC_DMA_CTRL_TRIG6_ENABLE_SHIFT      (6U)
+#define ADC_ETC_DMA_CTRL_TRIG6_ENABLE(x)         (((uint32_t)(((uint32_t)(x)) << ADC_ETC_DMA_CTRL_TRIG6_ENABLE_SHIFT)) & ADC_ETC_DMA_CTRL_TRIG6_ENABLE_MASK)
+#define ADC_ETC_DMA_CTRL_TRIG7_ENABLE_MASK       (0x80U)
+#define ADC_ETC_DMA_CTRL_TRIG7_ENABLE_SHIFT      (7U)
+#define ADC_ETC_DMA_CTRL_TRIG7_ENABLE(x)         (((uint32_t)(((uint32_t)(x)) << ADC_ETC_DMA_CTRL_TRIG7_ENABLE_SHIFT)) & ADC_ETC_DMA_CTRL_TRIG7_ENABLE_MASK)
+#define ADC_ETC_DMA_CTRL_TRIG0_REQ_MASK          (0x10000U)
+#define ADC_ETC_DMA_CTRL_TRIG0_REQ_SHIFT         (16U)
+#define ADC_ETC_DMA_CTRL_TRIG0_REQ(x)            (((uint32_t)(((uint32_t)(x)) << ADC_ETC_DMA_CTRL_TRIG0_REQ_SHIFT)) & ADC_ETC_DMA_CTRL_TRIG0_REQ_MASK)
+#define ADC_ETC_DMA_CTRL_TRIG1_REQ_MASK          (0x20000U)
+#define ADC_ETC_DMA_CTRL_TRIG1_REQ_SHIFT         (17U)
+#define ADC_ETC_DMA_CTRL_TRIG1_REQ(x)            (((uint32_t)(((uint32_t)(x)) << ADC_ETC_DMA_CTRL_TRIG1_REQ_SHIFT)) & ADC_ETC_DMA_CTRL_TRIG1_REQ_MASK)
+#define ADC_ETC_DMA_CTRL_TRIG2_REQ_MASK          (0x40000U)
+#define ADC_ETC_DMA_CTRL_TRIG2_REQ_SHIFT         (18U)
+#define ADC_ETC_DMA_CTRL_TRIG2_REQ(x)            (((uint32_t)(((uint32_t)(x)) << ADC_ETC_DMA_CTRL_TRIG2_REQ_SHIFT)) & ADC_ETC_DMA_CTRL_TRIG2_REQ_MASK)
+#define ADC_ETC_DMA_CTRL_TRIG3_REQ_MASK          (0x80000U)
+#define ADC_ETC_DMA_CTRL_TRIG3_REQ_SHIFT         (19U)
+#define ADC_ETC_DMA_CTRL_TRIG3_REQ(x)            (((uint32_t)(((uint32_t)(x)) << ADC_ETC_DMA_CTRL_TRIG3_REQ_SHIFT)) & ADC_ETC_DMA_CTRL_TRIG3_REQ_MASK)
+#define ADC_ETC_DMA_CTRL_TRIG4_REQ_MASK          (0x100000U)
+#define ADC_ETC_DMA_CTRL_TRIG4_REQ_SHIFT         (20U)
+#define ADC_ETC_DMA_CTRL_TRIG4_REQ(x)            (((uint32_t)(((uint32_t)(x)) << ADC_ETC_DMA_CTRL_TRIG4_REQ_SHIFT)) & ADC_ETC_DMA_CTRL_TRIG4_REQ_MASK)
+#define ADC_ETC_DMA_CTRL_TRIG5_REQ_MASK          (0x200000U)
+#define ADC_ETC_DMA_CTRL_TRIG5_REQ_SHIFT         (21U)
+#define ADC_ETC_DMA_CTRL_TRIG5_REQ(x)            (((uint32_t)(((uint32_t)(x)) << ADC_ETC_DMA_CTRL_TRIG5_REQ_SHIFT)) & ADC_ETC_DMA_CTRL_TRIG5_REQ_MASK)
+#define ADC_ETC_DMA_CTRL_TRIG6_REQ_MASK          (0x400000U)
+#define ADC_ETC_DMA_CTRL_TRIG6_REQ_SHIFT         (22U)
+#define ADC_ETC_DMA_CTRL_TRIG6_REQ(x)            (((uint32_t)(((uint32_t)(x)) << ADC_ETC_DMA_CTRL_TRIG6_REQ_SHIFT)) & ADC_ETC_DMA_CTRL_TRIG6_REQ_MASK)
+#define ADC_ETC_DMA_CTRL_TRIG7_REQ_MASK          (0x800000U)
+#define ADC_ETC_DMA_CTRL_TRIG7_REQ_SHIFT         (23U)
+#define ADC_ETC_DMA_CTRL_TRIG7_REQ(x)            (((uint32_t)(((uint32_t)(x)) << ADC_ETC_DMA_CTRL_TRIG7_REQ_SHIFT)) & ADC_ETC_DMA_CTRL_TRIG7_REQ_MASK)
+/*! @} */
 
 /*!
  * @}

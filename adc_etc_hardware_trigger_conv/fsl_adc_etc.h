@@ -66,6 +66,14 @@ typedef enum _adc_etc_interrupt_enable
 } adc_etc_interrupt_enable_t;
 
 
+typedef enum _adc_etc_dma_mode_selection
+{
+    kADC_ETC_TrigDMAWithLatchedSignal =
+        0U, /* Trig DMA_REQ with latched signal, REQ will be cleared when ACK and source request cleared. */
+    kADC_ETC_TrigDMAWithPulsedSignal = 1U, /* Trig DMA_REQ with pulsed signal, REQ will be cleared by ACK only. */
+} adc_etc_dma_mode_selection_t;
+
+
 /*!
  * @brief ADC_ETC configuration.
  */
@@ -75,6 +83,7 @@ typedef struct _adc_etc_config
                                Otherwise TSC would trigger ADC through ADC_ETC. */
     bool enableTSC0Trigger; /* Enable external TSC0 trigger. It is valid when enableTSCBypass = false. */
     bool enableTSC1Trigger; /* Enable external TSC1 trigger. It is valid when enableTSCBypass = false.*/
+    adc_etc_dma_mode_selection_t dmaMode; /* Select the ADC_ETC DMA mode. */
     uint32_t TSC0triggerPriority;         /* External TSC0 trigger priority, 7 is highest, 0 is lowest. */
     uint32_t TSC1triggerPriority;         /* External TSC1 trigger priority, 7 is highest, 0 is lowest. */
     uint32_t clockPreDivider;             /* Pre-divider for trig delay and interval. Available range is 0-255.
@@ -207,35 +216,35 @@ void ADC_ETC_ClearInterruptStatusFlags(ADC_ETC_Type *base,
 * @param base ADC_ETC peripheral base address.
 * @param triggerGroup Trigger group index. Available number is 0~7.
 */
-/*
+
 static inline void ADC_ETC_EnableDMA(ADC_ETC_Type *base, uint32_t triggerGroup)
 {
     // Avoid clearing status flags at the same time. //
     base->DMA_CTRL =
         (base->DMA_CTRL | (ADC_ETC_DMA_CTRL_TRIG0_ENABLE_MASK << triggerGroup)) & ~ADC_ETC_DMA_CTRL_TRGn_REQ_MASK;
 }
-*/
+
 /*!
 * @brief Disable the DMA corresponding to each trigger sources.
 *
 * @param base ADC_ETC peripheral base address.
 * @param triggerGroup Trigger group index. Available number is 0~7.
 */
-/*
+
 static inline void ADC_ETC_DisableDMA(ADC_ETC_Type *base, uint32_t triggerGroup)
 {
     // Avoid clearing status flags at the same time. //
     base->DMA_CTRL =
         (base->DMA_CTRL & ~(ADC_ETC_DMA_CTRL_TRIG0_ENABLE_MASK << triggerGroup)) & ~ADC_ETC_DMA_CTRL_TRGn_REQ_MASK;
 }
-*/
+
  
-/*
+
 static inline uint32_t ADC_ETC_GetDMAStatusFlags(ADC_ETC_Type *base)
 {
     return (((base->DMA_CTRL) & ADC_ETC_DMA_CTRL_TRGn_REQ_MASK) >> ADC_ETC_DMA_CTRL_TRIG0_REQ_SHIFT);
 }
-*/
+
 
 /*!
  * @brief Clear the DMA request status falgs. Only external XBAR sources support DMA request.
@@ -245,12 +254,12 @@ static inline uint32_t ADC_ETC_GetDMAStatusFlags(ADC_ETC_Type *base)
  * trigger7:0x80.
  */
  
-/*
+
 static inline void ADC_ETC_ClearDMAStatusFlags(ADC_ETC_Type *base, uint32_t mask)
 {
     base->DMA_CTRL = ((base->DMA_CTRL) & ~ADC_ETC_DMA_CTRL_TRGn_REQ_MASK) | (mask << ADC_ETC_DMA_CTRL_TRIG0_REQ_SHIFT);
 }
-*/
+
 
 /*!
 * @brief When enable ,all logical will be reset.

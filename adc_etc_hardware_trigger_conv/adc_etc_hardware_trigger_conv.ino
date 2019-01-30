@@ -7,24 +7,23 @@
  #include "Arduino.h"
 
 #include <stdint.h>
-//#include "defines.h"
 #include "fsl_adc_etc.h"
 
-#define PRINTF Serial.printf
+int kXBARA1_InputPitTrigger0       =  56;         /**< PIT_TRIGGER0 output assigned to XBARA1_IN56 input. */
+int kXBARA1_OutputAdcEtcXbar0Trig0 = 103;  /**< XBARA1_OUT103 output assigned to ADC_ETC_XBAR0_TRIG0 */
+
 
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
 
-
-//#define ADC_ETC_BASE 0x403B0000
 #define ADC_USER_CHANNEL 16U
 #define ADC_CHANNEL_GROUP0 0U
 #define ADC_CHANNEL_GROUP1 1U
 
 #define ADC_ETC_CHAIN_LENGTH 1U /* Chain length is 2. */
-#define ADC_ETC_CHANNEL0 15U
-#define ADC_ETC_CHANNEL1 0U
+#define ADC_ETC_CHANNEL0 7U   //A0 - See table 14-1
+#define ADC_ETC_CHANNEL1 8U   //A1 - See table 14-1
 
 static uint8_t calibrating;
 
@@ -62,7 +61,7 @@ void setup(void)
     adc_etc_trigger_config_t adcEtcTriggerConfig;
     adc_etc_trigger_chain_config_t adcEtcTriggerChainConfig;
 
-    PRINTF("ADC_ETC_Hardware_Trigger_Conv Example Start!\r\n");
+    Serial.printf("ADC_ETC_Hardware_Trigger_Conv Example Start!\r\n");
 
     ADC_Init();
     XBARA_Init();
@@ -110,7 +109,8 @@ void setup(void)
 
 void loop()
 {
-    PRINTF("ADC conversion vaule is %d and %d\r\n", g_AdcConversionValue0, g_AdcConversionValue1);
+    Serial.printf("ADC conversion vaule is %d and %d\r\n", g_AdcConversionValue0, g_AdcConversionValue1);
+    delay(2000);
 }
 
 /*!
@@ -161,11 +161,11 @@ void PIT_Init(uint32_t cycles)
 
 static void wait_for_cal(void)
 {
-  //printf("wait_for_cal\n");
+  Serial.printf("wait_for_cal\n");
   while (ADC1_GC & ADC_GC_CAL) ;
   // TODO: check CALF, but what do to about CAL failure?
   calibrating = 0;
-  //printf("cal complete\n");
+  Serial.printf("cal complete\n");
 }
 
 void xbara_connect(unsigned int input, unsigned int output)

@@ -33,7 +33,8 @@ void ADC_ETC_Init(ADC_ETC_Type *base, const adc_etc_config_t *config)
     /* Set ADC_ETC_CTRL register. */
     tmp32 = ADC_ETC_CTRL_EXT0_TRIG_PRIORITY(config->TSC0triggerPriority) |
             ADC_ETC_CTRL_EXT1_TRIG_PRIORITY(config->TSC1triggerPriority) |
-            ADC_ETC_CTRL_PRE_DIVIDER(config->clockPreDivider) | ADC_ETC_CTRL_TRIG_ENABLE(config->XBARtriggerMask);
+            ADC_ETC_CTRL_PRE_DIVIDER(config->clockPreDivider) | ADC_ETC_CTRL_TRIG_ENABLE(config->XBARtriggerMask)
+            | ADC_ETC_CTRL_DMA_MODE_SEL(config->dmaMode);
     if (config->enableTSCBypass)
     {
         tmp32 |= ADC_ETC_CTRL_TSC_BYPASS_MASK;
@@ -69,10 +70,11 @@ void ADC_ETC_GetDefaultConfig(adc_etc_config_t *config)
 {
     /* Initializes the configure structure to zero. */
     memset(config, 0, sizeof(*config));
-
+	
     config->enableTSCBypass = true;
     config->enableTSC0Trigger = false;
     config->enableTSC1Trigger = false;
+    config->dmaMode = kADC_ETC_TrigDMAWithLatchedSignal;
     config->TSC0triggerPriority = 0U;
     config->TSC1triggerPriority = 0U;
     config->clockPreDivider = 0U;
