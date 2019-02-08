@@ -147,8 +147,8 @@ void KeyboardController::init()
 	contribute_String_Buffers(mystring_bufs, sizeof(mystring_bufs)/sizeof(strbuf_t));
 	driver_ready_for_device(this);
 	USBHIDParser::driver_ready_for_hid_collection(this);
+	BluetoothController::driver_ready_for_bluetooth(this);
 	force_boot_protocol = false;	// start off assuming not
-	//BluetoothController::driver_ready_for_bluetooth(this);
 }
 
 bool KeyboardController::claim(Device_t *dev, int type, const uint8_t *descriptors, uint32_t len)
