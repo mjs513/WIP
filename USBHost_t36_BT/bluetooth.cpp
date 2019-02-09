@@ -31,7 +31,7 @@
 #define println USBHost::println_
 
 #define DEBUG_BT
-//#define DEBUG_BT_VERBOSE
+#define DEBUG_BT_VERBOSE
 
 #ifndef DEBUG_BT
 #undef DEBUG_BT_VERBOSE
@@ -601,7 +601,7 @@ void BluetoothController::queue_next_hci_command()
 void BluetoothController::handle_hci_command_status() 
 {
 	// <event type><param count><status><num packets allowed to be sent><CMD><CMD>
-#ifdef DEBUG_BT
+#ifdef DEBUG_BT1
 	uint16_t hci_command = rxbuf_[4] + (rxbuf_[5] << 8);
 	if (rxbuf_[2]) {
 		DBGPrintf("    Command %x Status %x - ", hci_command, rxbuf_[2]);

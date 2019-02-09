@@ -517,7 +517,7 @@ private:
 	virtual void hid_input_end();
 	virtual void disconnect_collection(Device_t *dev);
 	void add_to_list();
-	USBHIDInput *next;
+	USBHIDInput *next = NULL;
 	friend class USBHIDParser;
 protected:
 	Device_t *mydevice = NULL;
@@ -545,7 +545,7 @@ private:
 	virtual bool process_bluetooth_HID_data(const uint8_t *data, uint16_t length) {return false;}
 	virtual void release_bluetooth() {};
 	void add_to_list();
-	BTHIDInput *next;
+	BTHIDInput *next = NULL;
 	friend class BluetoothController;
 protected:
 	Device_t *btdevice = NULL;
@@ -716,10 +716,10 @@ public:
 	// need their own versions as both USBDriver and USBHIDInput provide
 	uint16_t idVendor();
 	uint16_t idProduct();
-
 	const uint8_t *manufacturer();
 	const uint8_t *product();
 	const uint8_t *serialNumber();
+
 	operator bool() { return ((device != nullptr) || (btdevice != nullptr)); }
 	// Main boot keyboard functions. 
 	uint16_t getKey() { return keyCode; }
