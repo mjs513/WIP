@@ -78,7 +78,6 @@ uint16_t JoystickController::idProduct()
 {
 	if (device != nullptr) return device->idProduct;
 	if (mydevice != nullptr) return mydevice->idProduct;
-	if (btdevice != nullptr) return btdevice->idProduct;
 	return 0;
 }
 
@@ -94,7 +93,6 @@ const uint8_t *JoystickController::product()
 {
 	if ((device != nullptr) && (device->strbuf != nullptr)) return &device->strbuf->buffer[device->strbuf->iStrings[strbuf_t::STR_ID_PROD]];
 	if ((mydevice != nullptr) && (mydevice->strbuf != nullptr)) return &mydevice->strbuf->buffer[mydevice->strbuf->iStrings[strbuf_t::STR_ID_PROD]]; 
-	if ((btdevice != nullptr) && (btdevice->strbuf != nullptr)) return &btdevice->strbuf->buffer[btdevice->strbuf->iStrings[strbuf_t::STR_ID_PROD]]; 
 	return nullptr;
 }
 
@@ -102,7 +100,6 @@ const uint8_t *JoystickController::serialNumber()
 {
 	if ((device != nullptr) && (device->strbuf != nullptr)) return &device->strbuf->buffer[device->strbuf->iStrings[strbuf_t::STR_ID_SERIAL]];
 	if ((mydevice != nullptr) && (mydevice->strbuf != nullptr)) return &mydevice->strbuf->buffer[mydevice->strbuf->iStrings[strbuf_t::STR_ID_SERIAL]]; 
-	if ((btdevice != nullptr) && (btdevice->strbuf != nullptr)) return &btdevice->strbuf->buffer[btdevice->strbuf->iStrings[strbuf_t::STR_ID_SERIAL]]; 
 	return nullptr;
 }
 
@@ -664,15 +661,16 @@ bool JoystickController::process_bluetooth_HID_data(const uint8_t *data, uint16_
 	// Example data from PS4 controller
 	//01 7e 7f 82 84 08 00 00 00 00
 	//   LX LY RX RY BT BT PS LT RT
-	Serial.printf("JoystickController::process_bluetooth_HID_data\n");
+	//Serial.printf("JoystickController::process_bluetooth_HID_data\n");
 	if (data[0] != 1) return false;
-	print("  Joystick Data: ");
-	print_hexbytes(data, length);
-	Serial.printf("  Joystick Data: ");
+	//print("  Joystick Data: ");
+	//print_hexbytes(data, length);
+	//Serial.printf("  Joystick Data: ");
 	for (uint16_t i = 0; i < length; i++ ) {
-		Serial.printf("%02x ", data[i]);
+		axisPS4[i] = data[i];
+		//Serial.printf("%02x ", axis[i]);
 	}
-	Serial.printf("\n");
+	//Serial.printf("\n");
 	return true;
 }
 

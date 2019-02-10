@@ -843,6 +843,10 @@ public:
 	void    joystickDataClear();
 	uint32_t getButtons() { return buttons; }
 	int		getAxis(uint32_t index) { return (index < (sizeof(axis)/sizeof(axis[0]))) ? axis[index] : 0; }
+	
+	int		getAxisPS4(uint32_t index) { return (index < (sizeof(axisPS4)/sizeof(axisPS4[0]))) ? axisPS4[index] : 0; }
+
+	
 	uint64_t axisMask() {return axis_mask_;}
 	uint64_t axisChangedMask() { return axis_changed_mask_;}
 	uint64_t axisChangeNotifyMask() {return axis_change_notify_mask_;}
@@ -887,6 +891,9 @@ private:
 	volatile bool joystickEvent = false;
 	uint32_t buttons = 0;
 	int axis[TOTAL_AXIS_COUNT] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+	
+	int axisPS4[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};  //PS4 only on BT
+	
 	uint64_t axis_mask_ = 0;	// which axis have valid data
 	uint64_t axis_changed_mask_ = 0;
 	uint64_t axis_change_notify_mask_ = 0x3ff;	// assume the low 10 values only. 
