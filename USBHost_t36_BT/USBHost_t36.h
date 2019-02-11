@@ -837,16 +837,12 @@ public:
 	const uint8_t *manufacturer();
 	const uint8_t *product();
 	const uint8_t *serialNumber();
-	operator bool() { return (((device != nullptr) || (mydevice != nullptr)) && connected_); }	// override as in both USBDriver and in USBHIDInput
+	operator bool() { return (((device != nullptr) || (mydevice != nullptr || (btdevice != nullptr))) && connected_); }	// override as in both USBDriver and in USBHIDInput
 
 	bool    available() { return joystickEvent; }
 	void    joystickDataClear();
 	uint32_t getButtons() { return buttons; }
 	int		getAxis(uint32_t index) { return (index < (sizeof(axis)/sizeof(axis[0]))) ? axis[index] : 0; }
-	
-	int		getAxisPS4(uint32_t index) { return (index < (sizeof(axisPS4)/sizeof(axisPS4[0]))) ? axisPS4[index] : 0; }
-
-	
 	uint64_t axisMask() {return axis_mask_;}
 	uint64_t axisChangedMask() { return axis_changed_mask_;}
 	uint64_t axisChangeNotifyMask() {return axis_change_notify_mask_;}
@@ -859,6 +855,13 @@ public:
 	enum { STANDARD_AXIS_COUNT = 10, ADDITIONAL_AXIS_COUNT = 54, TOTAL_AXIS_COUNT = (STANDARD_AXIS_COUNT+ADDITIONAL_AXIS_COUNT) };
 	typedef enum { UNKNOWN=0, PS3, PS4, XBOXONE, XBOX360} joytype_t;
 	joytype_t joystickType = UNKNOWN;
+	
+	//Bluetooth PS4
+	int		getAxisPS4(uint32_t index) { return (index < (sizeof(axisPS4)/sizeof(axisPS4[0]))) ? axisPS4[index] : 0; }
+	int		getOnChangePS4() {return ps4OnChange; }
+	int		getAxisChangePS4(uint32_t index) { return (index < (sizeof(axisChange)/sizeof(axisChange[0]))) ? axisChange[index] : 0; }
+	bool    setRumblePS4(uint8_t lValue, uint8_t rValue, uint8_t timeout=0xff);
+	
 protected:
 	// From USBDriver
 	virtual bool claim(Device_t *device, int type, const uint8_t *descriptors, uint32_t len);
@@ -873,7 +876,7 @@ protected:
 	virtual void disconnect_collection(Device_t *dev);
 	virtual bool hid_process_out_data(const Transfer_t *transfer);
 
-		// Bluetooth data
+	// Bluetooth data
 	virtual bool claim_bluetooth(BluetoothController *driver, uint32_t bluetooth_class);
 	virtual bool process_bluetooth_HID_data(const uint8_t *data, uint16_t length);
 	virtual void release_bluetooth();
@@ -883,6 +886,8 @@ private:
 	// Class specific
 	void init();
 	USBHIDParser *driver_ = nullptr;
+	BluetoothController *btdriver_ = nullptr;
+
 	joytype_t mapVIDPIDtoJoystickType(uint16_t idVendor, uint16_t idProduct, bool exclude_hid_devices);
 	bool transmitPS4UserFeedbackMsg();
 	bool transmitPS3UserFeedbackMsg();
@@ -890,10 +895,7 @@ private:
 	bool anychange = false;
 	volatile bool joystickEvent = false;
 	uint32_t buttons = 0;
-	int axis[TOTAL_AXIS_COUNT] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	
-	int axisPS4[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};  //PS4 only on BT
-	
+	int axis[TOTAL_AXIS_COUNT] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};	
 	uint64_t axis_mask_ = 0;	// which axis have valid data
 	uint64_t axis_changed_mask_ = 0;
 	uint64_t axis_change_notify_mask_ = 0x3ff;	// assume the low 10 values only. 
@@ -908,7 +910,6 @@ private:
 	uint8_t rumble_timeout_ = 0;
 	uint8_t leds_[3] = {0,0,0};
 	uint8_t connected_ = 0;	// what type of device if any is connected xbox 360... 
-
 
 	// Used by HID code
 	uint8_t collections_claimed = 0;
@@ -938,6 +939,11 @@ private:
 		bool 		hidDevice;
 	} product_vendor_mapping_t;
 	static product_vendor_mapping_t pid_vid_mapping[];
+	
+	//Bluetooth PS4
+	int axisPS4[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};	
+	int axisChange[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};	
+	int ps4OnChange;
 
 };
 
@@ -1616,6 +1622,13 @@ public:
 	enum {BT_CLASS_DEVICE= 0x0804}; // Toy - Robot
 	static void driver_ready_for_bluetooth(BTHIDInput *driver);
 
+
+	// BUGBUG version to allow some of the controlled objects to call?
+
+    void sendL2CapCommand(uint8_t* data, uint8_t nbytes, uint8_t channelLow = 0x01, uint8_t channelHigh = 0x00) {
+    	sendL2CapCommand (device_connection_handle_, data, nbytes, channelLow, channelHigh);
+    }
+
 protected:
 	virtual bool claim(Device_t *device, int type, const uint8_t *descriptors, uint32_t len);
 	virtual void control(const Transfer_t *transfer);
@@ -1624,6 +1637,7 @@ protected:
 
 	BTHIDInput * find_driver(uint32_t device_type);
 private:
+	friend class BTHIDInput;
 	static void rx_callback(const Transfer_t *transfer);
 	static void rx2_callback(const Transfer_t *transfer);
 	static void tx_callback(const Transfer_t *transfer);

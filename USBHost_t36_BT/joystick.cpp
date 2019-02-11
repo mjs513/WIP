@@ -202,21 +202,39 @@ bool JoystickController::setLEDs(uint8_t lr, uint8_t lg, uint8_t lb)
 }
 
 bool JoystickController::transmitPS4UserFeedbackMsg() {
-if (!driver_) return false;
-	uint8_t packet[32];
-    memset(packet, 0, sizeof(packet));
+	if (driver_)  {
+		uint8_t packet[32];
+	    memset(packet, 0, sizeof(packet));
 
-    packet[0] = 0x05; // Report ID
-    packet[1]= 0xFF;
+	    packet[0] = 0x05; // Report ID
+	    packet[1]= 0xFF;
 
-    packet[4] = rumble_lValue_; // Small Rumble
-    packet[5] = rumble_rValue_; // Big rumble
-    packet[6] = leds_[0]; // RGB value 
-    packet[7] = leds_[1]; 
-    packet[8] = leds_[2];
-    // 9, 10 flash ON, OFF times in 100ths of sedond?  2.5 seconds = 255
-    Serial.printf("Joystick update Rumble/LEDs");
-	return driver_->sendPacket(packet, 32);
+	    packet[4] = rumble_lValue_; // Small Rumble
+	    packet[5] = rumble_rValue_; // Big rumble
+	    packet[6] = leds_[0]; // RGB value 
+	    packet[7] = leds_[1]; 
+	    packet[8] = leds_[2];
+	    // 9, 10 flash ON, OFF times in 100ths of sedond?  2.5 seconds = 255
+	    Serial.printf("Joystick update Rumble/LEDs");
+		return driver_->sendPacket(packet, 32);
+	} else if (btdriver_) {
+		uint8_t packet[32];
+	    memset(packet, 0, sizeof(packet));
+
+	    packet[0] = 0x05; // Report ID
+	    packet[1]= 0xFF;
+
+	    packet[4] = rumble_lValue_; // Small Rumble
+	    packet[5] = rumble_rValue_; // Big rumble
+	    packet[6] = leds_[0]; // RGB value 
+	    packet[7] = leds_[1]; 
+	    packet[8] = leds_[2];
+	    // 9, 10 flash ON, OFF times in 100ths of sedond?  2.5 seconds = 255
+	    Serial.printf("Joystick update Rumble/LEDs");
+     	btdriver_->sendL2CapCommand(packet, sizeof(packet));
+     	return true;
+	}
+	return false;
 }
 
 static const uint8_t PS3_USER_FEEDBACK_INIT[] = {
@@ -378,6 +396,8 @@ void JoystickController::joystickDataClear() {
 	anychange = false;
 	axis_changed_mask_ = 0;
 	axis_mask_ = 0;
+	ps4OnChange = 0;
+	for(uint8_t i=0; i<10;i++) {axisChange[i] = 0; }
 }
 
 //*****************************************************************************
@@ -649,7 +669,7 @@ bool JoystickController::claim_bluetooth(BluetoothController *driver, uint32_t b
 {
 	if ((((bluetooth_class & 0xff00) == 0x2500) || (((bluetooth_class & 0xff00) == 0x500))) && ((bluetooth_class & 0x3C) == 0x08)) {
 		Serial.printf("JoystickController::claim_bluetooth TRUE\n");
-		//btdevice = driver;
+		btdriver_ = driver;
 		return true;
 	}
 	return false;
@@ -667,16 +687,69 @@ bool JoystickController::process_bluetooth_HID_data(const uint8_t *data, uint16_
 	//print_hexbytes(data, length);
 	//Serial.printf("  Joystick Data: ");
 	for (uint16_t i = 0; i < length; i++ ) {
+		if(data[i] != axisPS4[i]) { ps4OnChange = 1; axisChange[i] = 1; }
 		axisPS4[i] = data[i];
 		//Serial.printf("%02x ", axis[i]);
 	}
 	//Serial.printf("\n");
+    joystickEvent = true;
+    connected_ = true;
+	return true;
+}
+
+bool JoystickController::setRumblePS4(uint8_t lValue, uint8_t rValue, uint8_t timeout)
+{
+  /*              uint8_t buf[79];
+                memset(buf, 0, sizeof(buf));
+
+                buf[0] = 0x52; // HID BT Set_report (0x50) | Report Type (Output 0x02)
+                buf[1] = 0x11; // Report ID
+                buf[2] = 0x80;
+                buf[4]= 0xFF;
+
+                buf[7] = rumble_lValue_; // Small Rumble
+                buf[8] = rumble_rValue_; // Big rumble
+
+                buf[9] = leds_[0]; // Red
+                buf[10] = leds_[1]; // Green
+                buf[11] = leds_[2]; // Blue
+				
+	// 9, 10 flash ON, OFF times in 100ths of sedond?  2.5 seconds = 255
+	Serial.printf("Joystick update Rumble/LEDs");
+	btdriver_->sendL2CapCommand(buf, sizeof(buf));
+	
+            pkt = bytearray(77)
+            pkt[0] = 128
+            pkt[2] = 255
+            offset = 2
+            report_id = 0x11
+*/
+		uint8_t packet[77];
+	    memset(packet, 0, sizeof(packet));
+
+	    packet[0] = 0x52; // Report ID
+	    packet[1] = 0x11;
+		packet[2] = 0x80;
+		packet[4] = 0xFF;
+
+	    packet[7] = rumble_lValue_; // Small Rumble
+	    packet[8] = rumble_rValue_; // Big rumble
+	    packet[9] = leds_[0]; // RGB value 
+	    packet[10] = leds_[1]; 
+	    packet[11] = leds_[2];
+		packet[12] = 2.5;
+		packet[13] = 2.5;
+	    // 9, 10 flash ON, OFF times in 100ths of sedond?  2.5 seconds = 255
+	    Serial.printf("Joystick update Rumble/LEDs");
+     	btdriver_->sendL2CapCommand(packet, sizeof(packet));
+
 	return true;
 }
 
 void JoystickController::release_bluetooth() 
 {
-	//btdevice = nullptr;
+	btdevice = nullptr;
+	connected_ = false;
 
 }
 

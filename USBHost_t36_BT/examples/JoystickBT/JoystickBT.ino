@@ -7,37 +7,30 @@
 USBHost myusb;
 USBHub hub1(myusb);
 USBHub hub2(myusb);
-//KeyboardController keyboard1(myusb);
-//KeyboardController keyboard2(myusb);
 USBHIDParser hid1(myusb);
 USBHIDParser hid2(myusb);
 USBHIDParser hid3(myusb);
 USBHIDParser hid4(myusb);
 USBHIDParser hid5(myusb);
-//MouseController mouse1(myusb);
 JoystickController joystick1(myusb);
-BluetoothController bluet(myusb, true, "0000");   // Version does pairing to device
-//BluetoothController bluet(myusb);   // version assumes it already was paired
+//BluetoothController bluet(myusb, true, "0000");   // Version does pairing to device
+BluetoothController bluet(myusb);   // version assumes it already was paired
 int user_axis[64];
 uint32_t buttons_prev = 0;
 RawHIDController rawhid1(myusb);
 RawHIDController rawhid2(myusb, 0xffc90004);
 
-//USBDriver *drivers[] = {&hub1, &hub2,&keyboard1, &keyboard2, &joystick1, &bluet, &hid1, &hid2, &hid3, &hid4, &hid5};
 USBDriver *drivers[] = {&hub1, &hub2, &joystick1, &bluet, &hid1, &hid2, &hid3, &hid4, &hid5};
 
 #define CNT_DEVICES (sizeof(drivers)/sizeof(drivers[0]))
-//const char * driver_names[CNT_DEVICES] = {"Hub1","Hub2", "KB1", "KB2", "JOY1D", "Bluet", "HID1" , "HID2", "HID3", "HID4", "HID5"};
 const char * driver_names[CNT_DEVICES] = {"Hub1","Hub2", "JOY1D", "Bluet", "HID1" , "HID2", "HID3", "HID4", "HID5"};
 
 bool driver_active[CNT_DEVICES] = {false, false, false, false};
 
 // Lets also look at HID Input devices
-//USBHIDInput *hiddrivers[] = {&mouse1, &joystick1, &rawhid1, &rawhid2};
 USBHIDInput *hiddrivers[] = {&joystick1, &rawhid1, &rawhid2};
 
 #define CNT_HIDDEVICES (sizeof(hiddrivers)/sizeof(hiddrivers[0]))
-//const char * hid_driver_names[CNT_DEVICES] = {"Mouse1","Joystick1", "RawHid1", "RawHid2"};
 const char * hid_driver_names[CNT_DEVICES] = {"Joystick1", "RawHid1", "RawHid2"};
 
 bool hid_driver_active[CNT_DEVICES] = {false, false, false};
@@ -55,12 +48,6 @@ void setup()
   Serial.println("\n\nUSB Host Testing");
   Serial.println(sizeof(USBHub), DEC);
   myusb.begin();
-  //keyboard1.attachPress(OnPress);
-  //keyboard2.attachPress(OnPress);
-  //keyboard1.attachExtrasPress(OnHIDExtrasPress);
-  //keyboard1.attachExtrasRelease(OnHIDExtrasRelease);
-  //keyboard2.attachExtrasPress(OnHIDExtrasPress);
-  //keyboard2.attachExtrasRelease(OnHIDExtrasRelease);
 
   rawhid1.attachReceive(OnReceiveHidData);
   rawhid2.attachReceive(OnReceiveHidData);
@@ -130,49 +117,30 @@ void loop()
     }
   }
 
-
-/*
-  if(mouse1.available()) {
-    Serial.print("Mouse: buttons = ");
-    Serial.print(mouse1.getButtons());
-    Serial.print(",  mouseX = ");
-    Serial.print(mouse1.getMouseX());
-    Serial.print(",  mouseY = ");
-    Serial.print(mouse1.getMouseY());
-    Serial.print(",  wheel = ");
-    Serial.print(mouse1.getWheel());
-    Serial.print(",  wheelH = ");
-    Serial.print(mouse1.getWheelH());
-    Serial.println();
-    mouse1.mouseDataClear();
-  }
-*/
-
-    //Serial.print("Joystick: buttons = ");
-    //uint32_t buttons = joystick1.getButtonsPS4();
-    //Serial.print(buttons, HEX);
-
+  if (joystick1.available()) {
       for (uint8_t i = 0; i<10; i++) {
           psAxis[i] = joystick1.getAxisPS4(i);
-        }
-      //Serial.println();
-      if(psAxis[1] !=0 ){
+      }
+
       Serial.printf("LX: %d, LY: %d, RX: %d, RY: %d \r\n", psAxis[1], psAxis[2], psAxis[3], psAxis[4]);
       Serial.printf("L-Trig: %d, R-Trig: %d, Trig-Button: %d \r\n", psAxis[8], psAxis[9], psAxis[6]);
       Serial.printf("Buttons: %d, PS: %d\r\n", psAxis[5], psAxis[7]);
       Serial.println();
-      }
+  
     uint8_t ltv;
     uint8_t rtv;
-/*
-        ltv = joystick1.getAxisBT(3);
-        rtv = joystick1.getAxisBT(4);
+
+        ltv = joystick1.getAxisPS4(8);
+        rtv = joystick1.getAxisPS4(9);
+
         if ((ltv != joystick_left_trigger_value) || (rtv != joystick_right_trigger_value)) {
           joystick_left_trigger_value = ltv;
           joystick_right_trigger_value = rtv;
-          joystick1.setRumble(ltv, rtv);
-        } 
- */
+          joystick1.setRumblePS4(ltv, rtv);
+        }
+        
+     joystick1.joystickDataClear();
+  }
 
   // See if we have some RAW data
   if (rawhid1) {
