@@ -57,7 +57,7 @@
 // your best effort to read chapter 4 before asking USB questions!
 
 
-#define USBHOST_PRINT_DEBUG
+//#define USBHOST_PRINT_DEBUG
 
 /************************************************/
 /*  Data Types                                  */
@@ -539,7 +539,6 @@ public:
 		{  return  ((btdevice == nullptr) || (btdevice->strbuf == nullptr)) ? nullptr : &btdevice->strbuf->buffer[btdevice->strbuf->iStrings[strbuf_t::STR_ID_PROD]]; }
 	const uint8_t *serialNumber()
 		{  return  ((btdevice == nullptr) || (btdevice->strbuf == nullptr)) ? nullptr : &btdevice->strbuf->buffer[btdevice->strbuf->iStrings[strbuf_t::STR_ID_SERIAL]]; }
-
 private:
 	virtual bool claim_bluetooth(BluetoothController *driver, uint32_t bluetooth_class) {return false;}
 	virtual bool process_bluetooth_HID_data(const uint8_t *data, uint16_t length) {return false;}
@@ -861,6 +860,8 @@ public:
 	int		getOnChangePS4() {return ps4OnChange; }
 	int		getAxisChangePS4(uint32_t index) { return (index < (sizeof(axisChange)/sizeof(axisChange[0]))) ? axisChange[index] : 0; }
 	bool    setRumblePS4(uint8_t lValue, uint8_t rValue, uint8_t timeout=0xff);
+	bool    setPS4LEDs(uint8_t lr, uint8_t lg, uint8_t lb);
+
 	
 protected:
 	// From USBDriver
@@ -876,7 +877,7 @@ protected:
 	virtual void disconnect_collection(Device_t *dev);
 	virtual bool hid_process_out_data(const Transfer_t *transfer);
 
-	// Bluetooth data
+		// Bluetooth data
 	virtual bool claim_bluetooth(BluetoothController *driver, uint32_t bluetooth_class);
 	virtual bool process_bluetooth_HID_data(const uint8_t *data, uint16_t length);
 	virtual void release_bluetooth();
@@ -895,7 +896,7 @@ private:
 	bool anychange = false;
 	volatile bool joystickEvent = false;
 	uint32_t buttons = 0;
-	int axis[TOTAL_AXIS_COUNT] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};	
+	int axis[TOTAL_AXIS_COUNT] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 	uint64_t axis_mask_ = 0;	// which axis have valid data
 	uint64_t axis_changed_mask_ = 0;
 	uint64_t axis_change_notify_mask_ = 0x3ff;	// assume the low 10 values only. 
@@ -910,6 +911,7 @@ private:
 	uint8_t rumble_timeout_ = 0;
 	uint8_t leds_[3] = {0,0,0};
 	uint8_t connected_ = 0;	// what type of device if any is connected xbox 360... 
+
 
 	// Used by HID code
 	uint8_t collections_claimed = 0;

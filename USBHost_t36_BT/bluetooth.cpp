@@ -1126,30 +1126,7 @@ void BluetoothController::tx_data(const Transfer_t *transfer)
 // HCI Handle Low, HCI_Handle_High (PB, BC), Total length low, TLH  - HCI ACL Data packet
 // length Low, length high, channel id low, channel id high - L2CAP header
 // code, identifier, length, ... - Control-frame 
-/*******************************************************************
- *                                                                 *
- *                        HCI ACL Data Packet                      *
- *  From usb host shield 2.0 library							   *
- * 
- *                                                                 *
- *   buf[0]          buf[1]          buf[2]          buf[3]
- *   0       4       8    11 12      16              24            31 MSB
- *  .-+-+-+-+-+-+-+-|-+-+-+-|-+-|-+-|-+-+-+-+-+-+-+-|-+-+-+-+-+-+-+-.
- *  |      HCI Handle       |PB |BC |       Data Total Length       |   HCI ACL Data Packet
- *  .-+-+-+-+-+-+-+-|-+-+-+-|-+-|-+-|-+-+-+-+-+-+-+-|-+-+-+-+-+-+-+-.
- *
- *   buf[4]          buf[5]          buf[6]          buf[7]
- *   0               8               16                            31 MSB
- *  .-+-+-+-+-+-+-+-|-+-+-+-+-+-+-+-|-+-+-+-+-+-+-+-|-+-+-+-+-+-+-+-.
- *  |            Length             |          Channel ID           |   Basic L2CAP header
- *  .-+-+-+-+-+-+-+-|-+-+-+-+-+-+-+-|-+-+-+-+-+-+-+-|-+-+-+-+-+-+-+-.
- *
- *   buf[8]          buf[9]          buf[10]         buf[11]
- *   0               8               16                            31 MSB
- *  .-+-+-+-+-+-+-+-|-+-+-+-+-+-+-+-|-+-+-+-+-+-+-+-|-+-+-+-+-+-+-+-.
- *  |     Code      |  Identifier   |            Length             |   Control frame (C-frame)
- *  .-+-+-+-+-+-+-+-|-+-+-+-+-+-+-+-|-+-+-+-+-+-+-+-|-+-+-+-+-+-+-+-.   (signaling packet format)
- */
+
 /************************************************************/
 /*                    L2CAP Commands                        */
 
