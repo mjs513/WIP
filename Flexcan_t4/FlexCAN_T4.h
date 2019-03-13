@@ -9,6 +9,15 @@
 #define FLEXCAN_TX1_BUFFER_SIZE 128
 #define FLEXCAN_TX2_BUFFER_SIZE 16
 
+#define CAN_MCR_MAXMB(x)     (((uint32_t)(((uint32_t)(x)) << 0U)) & 0x7FU)
+#define FSL_FEATURE_FLEXCAN_HAS_MESSAGE_BUFFER_MAX_NUMBERn(x) (16)
+/* @brief Remove CAN Engine Clock Source Selection from unsupported part. */
+#define FSL_FEATURE_FLEXCAN_SUPPORT_ENGINE_CLK_SEL_REMOVE (1)
+
+#define CAN_CTRL2_TASD_MASK   (0xF80000U)
+#define CAN_CTRL2_TASD_SHIFT  (19U)
+#define CAN_CTRL2_TASD(x)  (((uint32_t)(((uint32_t)(x)) << CAN_CTRL2_TASD_SHIFT)) & CAN_CTRL2_TASD_MASK)
+
 typedef struct CAN_message_t {
   uint32_t id = 0;          // can identifier
   uint16_t timestamp = 0;   // FlexCAN time when message arrived
@@ -208,7 +217,8 @@ class FlexCAN_T4 {
     bool msg_distribution = 0;
     static bool one_process;
     void packet_distribution(CAN_message_t &frame);
-
+    void FLEXCAN_Reset();
+    void FLEXCAN_Enable(bool enable);
 };
 
 extern FlexCAN_T4 Can1;

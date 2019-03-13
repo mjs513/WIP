@@ -1,24 +1,19 @@
 #include "imxrt_flexcan.h"
 #include "FlexCAN_T4.h"
-#include "clock_functions.h"
 
 //FlexCAN_T4 Can2 = FlexCAN_T4(FLEXCan2_BASE);
 
 void setup() {
   Serial.begin(115200);
-  delay(4000);
   
-  /*set osc clock crystal freq */
-  CLOCK_SetXtalFreq(24000000UL);
-
-  Can2.setRX();
-  Can2.setTX();
+  //Can2.setRX();
+  //Can2.setTX();
   //  Can2.setMaxMB(10);
   Can2.setBaudRate(1000000);
   Can2.enableFIFO(1);
   Can2.enableFIFOInterrupt();
   Can2.setMB(MB8, RX, STD);
-  Can2.enableMBInterrupt(MB8);
+  Can2.enableMBInterrupt(MB9);
   Can2.onReceive(canSniff);
   //  Can0.enableMBInterrupt(MB0);
   // MCR POR == 1501560847
@@ -28,8 +23,6 @@ void setup() {
   //  FLEXCANb_MCR(_baseAddress) &= ~FLEXCAN_MCR_HALT;
   //  while (FLEXCANb_MCR(_baseAddress) & FLEXCAN_MCR_FRZ_ACK);
 
-  
-  //printClocks();
 }
 
 void loop() {
@@ -72,30 +65,4 @@ void canSniff(const CAN_message_t &msg) { // global callback
   for ( uint8_t i = 0; i < msg.len; i++ ) {
     Serial.print(msg.buf[i], HEX); Serial.print(" ");
   } Serial.println();
-}
-
-
-void printClocks(){
-  Serial.printf("System Clock: %d\r\n", CLOCK_GetAhbFreq());
-  Serial.printf("IPG Clock: %d\r\n", CLOCK_GetFreq(kCLOCK_IpgClk));
-  Serial.printf("Semc Clock: %d\r\n", CLOCK_GetFreq(kCLOCK_SemcClk));
-  Serial.printf("RTC Clock: %d\r\n", CLOCK_GetFreq(kCLOCK_RtcClk));
-  Serial.printf("USB1pll Clock: %d\r\n", CLOCK_GetFreq(kCLOCK_Usb1PllClk));
-  Serial.printf("Peripheral Clock: %d\r\n", CLOCK_GetFreq(kCLOCK_PerClk));
-  Serial.printf("Osc Clock: %d\r\n", CLOCK_GetFreq(kCLOCK_OscClk));
-  Serial.printf("Arm Clock: %d\r\n", CLOCK_GetFreq(kCLOCK_ArmPllClk));
-  Serial.printf("Usb1PllPfd0 Clock: %d\r\n", CLOCK_GetFreq(kCLOCK_Usb1PllPfd0Clk));
-  Serial.printf("Usb1PllPfd1 Clock: %d\r\n", CLOCK_GetFreq(kCLOCK_Usb1PllPfd1Clk));
-  Serial.printf("Usb1PllPfd2 Clock: %d\r\n", CLOCK_GetFreq(kCLOCK_Usb1PllPfd2Clk));
-  Serial.printf("Usb1PllPfd3 Clock: %d\r\n", CLOCK_GetFreq(kCLOCK_Usb1PllPfd3Clk));
-  Serial.printf("Usb2Pll Clock: %d\r\n", CLOCK_GetFreq(kCLOCK_Usb2PllClk));
-  Serial.printf("SysPll Clock: %d\r\n", CLOCK_GetFreq(kCLOCK_SysPllClk));
-  Serial.printf("SysPllPfd0 Clock: %d\r\n", CLOCK_GetFreq(kCLOCK_SysPllPfd0Clk));
-  Serial.printf("SysPllPfd1 Clock: %d\r\n", CLOCK_GetFreq(kCLOCK_SysPllPfd1Clk));
-  Serial.printf("SysPllPfd2 Clock: %d\r\n", CLOCK_GetFreq(kCLOCK_SysPllPfd2Clk));
-  Serial.printf("SysPllPfd3 Clock: %d\r\n", CLOCK_GetFreq(kCLOCK_SysPllPfd3Clk));
-  Serial.printf("EnetPll0 Clock: %d\r\n", CLOCK_GetFreq(kCLOCK_EnetPll0Clk));
-  Serial.printf("EnetPll1 Clock: %d\r\n", CLOCK_GetFreq(kCLOCK_EnetPll1Clk));
-  Serial.printf("AudioPll Clock: %d\r\n", CLOCK_GetFreq(kCLOCK_AudioPllClk));
-  Serial.printf("VideoPll Clock: %d\r\n", CLOCK_GetFreq(kCLOCK_VideoPllClk));
 }

@@ -1,9 +1,8 @@
 #include "FlexCAN_T4.h"
 #include "imxrt_flexcan.h"
 #include "Arduino.h"
-#include "clock_functions.h"
 
-FlexCAN_T4 Can1 = FlexCAN_T4(FLEXCAN1_BASE);
+FlexCAN_T4 Can1 = FlexCAN_T4(FLEXCAN2_BASE);
 FlexCAN_T4 Can2 = FlexCAN_T4(FLEXCAN2_BASE);
 
 
@@ -26,45 +25,48 @@ void can2_message_isr (void) {
 
 FlexCAN_T4::FlexCAN_T4(uint32_t base) {
   _baseAddress = base;
-  CCM_CSCMR2 = (CCM_CSCMR2 & 0xFFFFFC03) | CCM_CSCMR2_CAN_CLK_SEL(1) | CCM_CSCMR2_CAN_CLK_PODF(3);
+  //clock settings for flexcan
+  CCM_CSCMR2 = (CCM_CSCMR2 & 0xFFFFFC03) | CCM_CSCMR2_CAN_CLK_SEL(2) |CCM_CSCMR2_CAN_CLK_PODF(3);
+  Serial.print("CCM_CSCMR2: ");Serial.println(CCM_CSCMR2, BIN);
+  
+  if ( _baseAddress == FLEXCAN1_BASE ) {
+  CCM_CCGR0 |= CCM_CCGR0_CAN1(CCM_CCGR_ON); 
+  CCM_CCGR0 |= CCM_CCGR0_CAN1_SERIAL(CCM_CCGR_ON);
+  Serial.print("CCM_CCGR0: ");Serial.println(CCM_CCGR0, BIN);
+    
+    _VectorsRam[16 + IRQ_CAN1] = can1_message_isr;
+    NVIC_IRQ = IRQ_CAN1;
+    //CCM_CCGR0 |= (0xF << 18);
+  }
+  else if ( _baseAddress == FLEXCAN2_BASE ) {
 
-  //CCM_CCGR3 |= CCM_CCGR3_LPUART6(0);
+  //CCM_CCGR0 |= (0xF << 18);
+  CCM_CCGR0 |= CCM_CCGR0_CAN2(CCM_CCGR_ON); 
+  CCM_CCGR0 |= CCM_CCGR0_CAN2_SERIAL(CCM_CCGR_ON);
+  Serial.print("CCM_CCGR0: ");Serial.println(CCM_CCGR0, BIN);
 
     //-------------------------------------//
     //rx configure pin for flexcan
     CORE_PIN0_CONFIG = 0x10;        // alt 0 is can2
     IOMUXC_FLEXCAN2_RX_SELECT_INPUT = 0x01;
+    Serial.print("IOMUXC_FLEXCAN2_RX_SELECT_INPUT: ");Serial.println(IOMUXC_FLEXCAN2_RX_SELECT_INPUT, BIN);
   
     //pin1, can2TX B0_02
     CORE_PIN1_CONFIG = 0x10;
     uint32_t fastio =  IOMUXC_PAD_SRE | IOMUXC_PAD_DSE(3) | IOMUXC_PAD_SPEED(3);
-    CORE_PIN0_PADCONFIG = 0x1f038;
-    CORE_PIN1_PADCONFIG = 0x1f038;  // 0x1A081, 0x10B0
+    CORE_PIN0_PADCONFIG = 0xB0;
+    CORE_PIN1_PADCONFIG = 0xB0;  // 0x1A081, 0x10B0
 
-  //clock settings for flexcan
-  CCM_CSCMR2 = (CCM_CSCMR2 & 0xFFFFFC03) | CCM_CSCMR2_CAN_CLK_SEL(1) |CCM_CSCMR2_CAN_CLK_PODF(0);
-  Serial.println(CCM_CSCMR2, BIN);
-
-  //CCM_CCGR0 |= (0xF << 18);
-  //CCM_CCGR0 |= CCM_CCGR0_CAN1(CCM_CCGR_ON);
-  //Serial.println("Clock on");
-  
-  if ( _baseAddress == FLEXCAN1_BASE ) {
-    _VectorsRam[16 + IRQ_CAN1] = can1_message_isr;
-    NVIC_IRQ = IRQ_CAN1;
-    CCM_CCGR0 |= (0xF << 14);
-  }
-  else if ( _baseAddress == FLEXCAN2_BASE ) {
+    Serial.print("Core PINS: "); Serial.print(CORE_PIN0_CONFIG, BIN);
+    Serial.print(", "); Serial.println(CORE_PIN1_CONFIG, BIN);
+    
     _VectorsRam[16 + IRQ_CAN2] = can2_message_isr;
     NVIC_IRQ = IRQ_CAN2;
-    CCM_CCGR0 |= (0xF << 18);
   }
-  FLEXCANb_CTRL1(_baseAddress) |= FLEXCAN_CTRL_LOM; /* listen only mode enable */
-  FLEXCANb_MCR(_baseAddress) |= FLEXCAN_MCR_FRZ; /* enable freeze bit */
-  FLEXCANb_MCR(_baseAddress) &= ~FLEXCAN_MCR_MDIS; /* enable module */
 
-  while (FLEXCANb_MCR(_baseAddress) & FLEXCAN_MCR_LPM_ACK);
-  softReset(); /* reset bus */
+    FLEXCAN_Enable(true);
+    FLEXCAN_Reset();
+
   while (!(FLEXCANb_MCR(_baseAddress) & FLEXCAN_MCR_FRZ_ACK));
   FLEXCANb_MCR(_baseAddress) |= FLEXCAN_MCR_SRX_DIS; /* Disable self-reception */
 
@@ -78,23 +80,110 @@ FlexCAN_T4::FlexCAN_T4(uint32_t base) {
   FLEXCANb_MCR(_baseAddress) &= ~FLEXCAN_MCR_SUPV;
   FLEXCANb_CTRL2(_baseAddress) |= FLEXCAN_CTRL2_RRS | // store remote frames
                                   FLEXCAN_CTRL2_MRP; // mailbox > FIFO priority.
-								  
-  setBaudRate(1000000);
-  setMaxMB(10);
-  FLEXCANb_MCR(_baseAddress) &= ~FLEXCAN_MCR_HALT; // start the CAN //
 
+  FLEXCANb_MCR(_baseAddress) &= ~FLEXCAN_MCR_HALT; // start the CAN //
+  Serial.print("FLEXCANb_MCR0: ");Serial.println(FLEXCANb_MCR(_baseAddress), BIN);
+  
   while (FLEXCANb_MCR(_baseAddress) & FLEXCAN_MCR_FRZ_ACK);
   while (FLEXCANb_MCR(_baseAddress) & FLEXCAN_MCR_NOT_RDY); // wait until ready /
+  
+  Serial.print("FLEXCANb_MCR1: ");Serial.println(FLEXCANb_MCR(_baseAddress), BIN);
 
   //setRX(); setTX();
 
   //NVIC_SET_PRIORITY(NVIC_IRQ, 1); // set interrupt priority /
   NVIC_ENABLE_IRQ(NVIC_IRQ); // enable message interrupt /
 
-FLEXCANb_MCR(_baseAddress) &= ~FLEXCAN_CTRL_BOFF_REC;
+  FLEXCANb_MCR(_baseAddress) &= ~FLEXCAN_CTRL_BOFF_REC;
+}
+
+void FlexCAN_T4::FLEXCAN_Enable(bool enable)
+{
+    if (enable)
+    {
+        FLEXCAN2_MCR &= ~0x80000000U;
+        Serial.print("FLEXCAN2_MCR &= ~0x80000000U\r\n");
+        Serial.println(FLEXCAN2_MCR, BIN);
+        /* Wait FlexCAN exit from low-power mode. */
+        while (FLEXCAN2_MCR & 0x100000U)
+        {
+        }
+    }
+    else
+    {
+        FLEXCAN2_MCR |= 0x80000000U;
+        /* Wait FlexCAN enter low-power mode. */
+        while (!(FLEXCAN2_MCR & 0x100000U))
+        {
+        }
+    }
 }
 
 
+
+void FlexCAN_T4::FLEXCAN_Reset()
+{
+    /* The module must should be first exit from low power
+     * mode, and then soft reset can be applied.
+     */
+    //Serial.println("IN RESET");
+    FLEXCAN2_MCR &= 0x80000000U;
+    //Serial.print("FLEXCAN2_MCR &= 0x80000000U:  ");
+    //Serial.println(FLEXCAN2_MCR, BIN);  //no change
+
+    uint8_t i;
+
+    /* Wait until FlexCAN exit from any Low Power Mode. */
+    while ((FLEXCAN2_MCR & 0x100000U))
+    {
+      //Serial.println("NOT EXITING");
+    }
+
+    /* Assert Soft Reset Signal. */
+    //Serial.println("Assert Soft Reset Signal  ");
+    FLEXCAN2_MCR |= 0x2000000U;
+    //Serial.print("FLEXCAN2_MCR |= 0x2000000U: ");
+    //Serial.println(FLEXCAN2_MCR, BIN);
+
+    /* Wait until FlexCAN reset completes. */
+    while (FLEXCAN2_MCR & 0x2000000U)
+    {
+      //Serial.print("NOT reset completes:  ");
+      //Serial.println(FLEXCAN2_MCR, BIN);
+    }
+
+    //Serial.println("RESETING REGISTERS");
+    /* Reset MCR rigister. */
+    FLEXCAN2_MCR |= 0x200000U | CAN_MCR_MAXMB(16);
+
+
+    //Serial.println("Reset CTRL1 and CTRL2 rigister");
+    /* Reset CTRL1 and CTRL2 rigister. */
+    FLEXCAN2_CTRL1 = 0x80U;
+    FLEXCAN2_CTRL2 = CAN_CTRL2_TASD(0x16) | 0x20000U | 0x10000U;
+
+    /* Clean all individual Rx Mask of Message Buffers. */
+    //for (i = 0; i < FSL_FEATURE_FLEXCAN_HAS_MESSAGE_BUFFER_MAX_NUMBERn(base); i++)
+    //{
+    //    FLEXCAN2_RXIMR[i] = 0x3FFFFFFF;
+    //}
+
+    /* Clean Global Mask of Message Buffers. */
+    FLEXCAN2_RXMGMASK = 0x3FFFFFFF;
+    /* Clean Global Mask of Message Buffer 14. */
+    FLEXCAN2_RX14MASK = 0x3FFFFFFF;
+    /* Clean Global Mask of Message Buffer 15. */
+    FLEXCAN2_RX15MASK = 0x3FFFFFFF;
+    /* Clean Global Mask of Rx FIFO. */
+    FLEXCAN2_RXFGMASK = 0x3FFFFFFF;
+
+    /* Clean all Message Buffer CS fields. */
+    //for (i = 0; i < FSL_FEATURE_FLEXCAN_HAS_MESSAGE_BUFFER_MAX_NUMBERn(base); i++)
+    //{
+    //    base->MB[i].CS = 0x0;
+    //}
+  
+}
 
 
 
@@ -864,8 +953,8 @@ void FlexCAN_T4::onReceive(_MB_ptr handler) {
 
 void FlexCAN_T4::setBaudRate(uint32_t baud) {
   currentBitrate = baud;
-  uint32_t divisor = 0, bestDivisor = 0, result = 16000000 / baud / (divisor + 1);
-  int error = baud - (16000000 / (result * (divisor + 1))), bestError = error;
+  uint32_t divisor = 0, bestDivisor = 0, result = 20000000 / baud / (divisor + 1);
+  int error = baud - (20000000 / (result * (divisor + 1))), bestError = error;
   bool frz_flag_negate = 0;
 
   if ( !(FLEXCANb_MCR(_baseAddress) & FLEXCAN_MCR_FRZ_ACK) ) { // currently not in freeze mode
@@ -874,9 +963,9 @@ void FlexCAN_T4::setBaudRate(uint32_t baud) {
 
   while (result > 5) {
     divisor++;
-    result = 16000000 / baud / (divisor + 1);
+    result = 20000000 / baud / (divisor + 1);
     if (result <= 25) {
-      error = baud - (16000000 / (result * (divisor + 1)));
+      error = baud - (20000000 / (result * (divisor + 1)));
       if (error < 0) error *= -1;
       if (error < bestError) {
         bestError = error;
@@ -890,7 +979,7 @@ void FlexCAN_T4::setBaudRate(uint32_t baud) {
   }
 
   divisor = bestDivisor;
-  result = 16000000 / baud / (divisor + 1);
+  result = 20000000 / baud / (divisor + 1);
 
   if ((result < 5) || (result > 25) || (bestError > 300)) {
     if ( frz_flag_negate ) FLEXCAN_ExitFreezeMode();
