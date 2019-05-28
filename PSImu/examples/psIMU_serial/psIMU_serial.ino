@@ -2,7 +2,7 @@
  * FreeIMU library serial communication protocol
 */
 
-#include "i2c_t3.h"  
+#include <Wire.h>  
 #include <SPI.h>
 #include <psIMU.h>
 #include "CommunicationUtils.h"
@@ -69,7 +69,10 @@ void setup() {
   delay(5000);
   
    // Setup for Master mode, pins 16/17, external pullups, 400kHz for Teensy 3.1
-  Wire.begin(I2C_MASTER, 0x00, I2C_PINS_18_19, I2C_PULLUP_EXT, I2C_RATE_400);
+  //Wire.begin(I2C_MASTER, 0x00, I2C_PINS_18_19, I2C_PULLUP_EXT, I2C_RATE_400);
+  Wire.begin();
+  Wire.setClock(400000);
+
   delay(1000);
  
   // Set up the interrupt pins, they're set as active high, push-pull
